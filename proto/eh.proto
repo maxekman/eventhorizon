@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package eh;
+
+import "google/protobuf/any.proto";
+
+message UUID {
+    string value = 1;
+}
+
+// Command is a Event Horizon command.
+message Command {
+    string type = 1;
+    string entity_type = 2;
+    string entity_id = 3;
+    google.protobuf.Any data = 4;
+}
+
+// service CommandHandler {
+//     rpc HandleCommand(Command) returns (CommandResult) {}
+// }

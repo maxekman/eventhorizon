@@ -56,3 +56,11 @@
 [[constraint]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "1.8.2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/golang/protobuf"

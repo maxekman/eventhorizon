@@ -65,6 +65,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
+<<<<<<< HEAD
   packages = [
     "proto",
     "protoc-gen-go/descriptor",
@@ -74,6 +75,11 @@
     "ptypes/empty",
     "ptypes/timestamp"
   ]
+||||||| merged common ancestors
+  packages = ["proto","protoc-gen-go/descriptor","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/timestamp"]
+=======
+  packages = ["proto","protoc-gen-go","protoc-gen-go/descriptor","protoc-gen-go/generator","protoc-gen-go/grpc","protoc-gen-go/plugin","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/timestamp"]
+>>>>>>> WIP: gRPC command bus
   revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
 
 [[projects]]
@@ -264,6 +270,12 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
+<<<<<<< HEAD
   inputs-digest = "26b24c28c62e7a25ca824e6fedda8b2f8bf1475904c21297a6f7138b92431271"
+||||||| merged common ancestors
+  inputs-digest = "b32f540ce9fc0c39a5601d1194aca79a13b2338b1701d798109cb7f26c124e09"
+=======
+  inputs-digest = "f94c18bb939ff53c5d4d2d272242948ae883b8423459a5cf237823681ddb6709"
+>>>>>>> WIP: gRPC command bus
   solver-name = "gps-cdcl"
   solver-version = 1

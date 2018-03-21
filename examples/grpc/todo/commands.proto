@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package todo;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "eh.proto";
+
+option (gogoproto.gostring_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.populate_all) = true;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+
+message Create {
+    // bytes Id = 1 [(gogoproto.customtype) = "github.com/gogo/protobuf/test.Uuid", (gogoproto.nullable) = false];
+    eh.UUID id = 1 [(gogoproto.nullable) = false];
+}
+
+message Delete {
+    eh.UUID id = 1;
+}
+
+message AddItem {
+    eh.UUID id = 1;
+    string desc = 2;
+}
+
+message RemoveItem {
+    eh.UUID id = 1;
+    int32 item_id = 2;
+}
+
+message RemoveCompletedItems {
+    eh.UUID id = 1;
+}
+
+message SetItemDescription {
+    eh.UUID id = 1;
+    int32 item_id = 2;
+    string desc = 3;
+}
+
+message CheckItem {
+    eh.UUID id = 1;
+    int32 item_id = 2;
+    bool checked = 3;
+}
+
+message CheckAllItems {
+    eh.UUID id = 1;
+    bool checked = 2;
+}
