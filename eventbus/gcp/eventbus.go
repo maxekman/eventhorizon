@@ -26,8 +26,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"google.golang.org/api/option"
 
-	// Register uuid.UUID as BSON type.
-	_ "github.com/looplab/eventhorizon/types/mongodb"
+	// Register eh.ID as BSON type.
+	_ "github.com/looplab/eventhorizon/encoding/bson"
 
 	eh "github.com/looplab/eventhorizon"
 )
@@ -276,10 +276,10 @@ func (e event) AggregateType() eh.AggregateType {
 }
 
 // AggrgateID implements the AggrgateID method of the eventhorizon.Event interface.
-func (e event) AggregateID() uuid.UUID {
-	id, err := uuid.Parse(e.evt.AggregateID)
+func (e event) AggregateID() eh.ID {
+	id, err := eh.ParseID(e.evt.AggregateID)
 	if err != nil {
-		return uuid.Nil
+		return eh.EmptyID()
 	}
 	return id
 }

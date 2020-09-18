@@ -21,15 +21,19 @@ import (
 	"sort"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/commandhandler/bus"
 	eventbus "github.com/looplab/eventhorizon/eventbus/local"
 	eventstore "github.com/looplab/eventhorizon/eventstore/memory"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	repo "github.com/looplab/eventhorizon/repo/memory"
 
 	"github.com/looplab/eventhorizon/examples/guestlist/domain"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func Example() {
 	// Create the event store.
@@ -51,7 +55,7 @@ func Example() {
 	guestListRepo := repo.NewRepo()
 
 	// Setup the domain.
-	eventID := uuid.New()
+	eventID := eh.NewID()
 	domain.Setup(
 		eventStore,
 		eventBus,
@@ -66,10 +70,10 @@ func Example() {
 	// --- Execute commands on the domain --------------------------------------
 
 	// IDs for all the guests.
-	athenaID := uuid.New()
-	hadesID := uuid.New()
-	zeusID := uuid.New()
-	poseidonID := uuid.New()
+	athenaID := eh.NewID()
+	hadesID := eh.NewID()
+	zeusID := eh.NewID()
+	poseidonID := eh.NewID()
 
 	// Issue some invitations and responses. Error checking omitted here.
 	if err := commandBus.HandleCommand(ctx, &domain.CreateInvite{ID: athenaID, Name: "Athena", Age: 42}); err != nil {

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// +build integration
+
 package gcp
 
 import (
@@ -22,7 +24,12 @@ import (
 	"time"
 
 	"github.com/looplab/eventhorizon/eventbus"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestEventBus(t *testing.T) {
 	// Connect to localhost if not running inside docker

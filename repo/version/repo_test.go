@@ -20,12 +20,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 	"github.com/looplab/eventhorizon/repo"
 	"github.com/looplab/eventhorizon/repo/memory"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestReadRepo(t *testing.T) {
 	baseRepo := memory.NewRepo()
@@ -51,7 +55,7 @@ func TestReadRepo(t *testing.T) {
 func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 	// Insert a non-versioned item.
 	simpleModel := &mocks.SimpleModel{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "simpleModel",
 	}
 	if err := r.Save(ctx, simpleModel); err != nil {
@@ -67,7 +71,7 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 
 	// Insert a versioned item.
 	modelMinVersion := &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Version:   1,
 		Content:   "modelMinVersion",
 		CreatedAt: time.Now().Round(time.Millisecond),
@@ -149,7 +153,7 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 
 	// Find with min version, with timeout, data available immediately.
 	modelMinVersion = &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Version:   1,
 		Content:   "modelMinVersion",
 		CreatedAt: time.Now().Round(time.Millisecond),
@@ -176,7 +180,7 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 
 	// Find with min version, with timeout, created data available on retry.
 	modelMinVersion = &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Version:   1,
 		Content:   "modelMinVersion",
 		CreatedAt: time.Now().Round(time.Millisecond),
@@ -216,7 +220,7 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 
 	// Find with min version, with timeout, created data available on retry.
 	modelMinVersion = &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Version:   4,
 		Content:   "modelMinVersion",
 		CreatedAt: time.Now().Round(time.Millisecond),

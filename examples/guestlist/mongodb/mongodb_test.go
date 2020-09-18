@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// +build integration
+
 package mongodb
 
 import (
@@ -22,16 +24,20 @@ import (
 	"sort"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/commandhandler/bus"
 	eventbus "github.com/looplab/eventhorizon/eventbus/local"
 	eventstore "github.com/looplab/eventhorizon/eventstore/mongodb"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	repo "github.com/looplab/eventhorizon/repo/mongodb"
 	"github.com/looplab/eventhorizon/repo/version"
 
 	"github.com/looplab/eventhorizon/examples/guestlist/domain"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func Example() {
 	// Use MongoDB in Docker with fallback to localhost.
@@ -73,7 +79,7 @@ func Example() {
 	guestListRepo.SetEntityFactory(func() eh.Entity { return &domain.GuestList{} })
 
 	// Setup the domain.
-	eventID := uuid.New()
+	eventID := eh.NewID()
 	domain.Setup(
 		eventStore,
 		eventBus,
@@ -93,10 +99,10 @@ func Example() {
 	// --- Execute commands on the domain --------------------------------------
 
 	// IDs for all the guests.
-	athenaID := uuid.New()
-	hadesID := uuid.New()
-	zeusID := uuid.New()
-	poseidonID := uuid.New()
+	athenaID := eh.NewID()
+	hadesID := eh.NewID()
+	zeusID := eh.NewID()
+	poseidonID := eh.NewID()
 
 	// Issue some invitations and responses. Error checking omitted here.
 	if err := commandBus.HandleCommand(ctx, &domain.CreateInvite{ID: athenaID, Name: "Athena", Age: 42}); err != nil {

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,8 +27,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
-	// Register uuid.UUID as BSON type.
-	_ "github.com/looplab/eventhorizon/types/mongodb"
+	// Register eh.ID as BSON type.
+	_ "github.com/looplab/eventhorizon/encoding/bson"
 
 	eh "github.com/looplab/eventhorizon"
 )
@@ -177,7 +176,7 @@ func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersio
 }
 
 // Load implements the Load method of the eventhorizon.EventStore interface.
-func (s *EventStore) Load(ctx context.Context, id uuid.UUID) ([]eh.Event, error) {
+func (s *EventStore) Load(ctx context.Context, id eh.ID) ([]eh.Event, error) {
 	c := s.client.Database(s.dbName(ctx)).Collection("events")
 
 	var aggregate aggregateRecord
@@ -314,7 +313,7 @@ func (s *EventStore) dbName(ctx context.Context) string {
 
 // aggregateRecord is the Database representation of an aggregate.
 type aggregateRecord struct {
-	AggregateID uuid.UUID `bson:"_id"`
+	AggregateID eh.ID     `bson:"_id"`
 	Version     int       `bson:"version"`
 	Events      []dbEvent `bson:"events"`
 	// Type        string        `bson:"type"`
@@ -329,7 +328,7 @@ type dbEvent struct {
 	data          eh.EventData     `bson:"-"`
 	Timestamp     time.Time        `bson:"timestamp"`
 	AggregateType eh.AggregateType `bson:"aggregate_type"`
-	AggregateID   uuid.UUID        `bson:"_id"`
+	AggregateID   eh.ID            `bson:"_id"`
 	Version       int              `bson:"version"`
 }
 
@@ -366,7 +365,7 @@ type event struct {
 }
 
 // AggrgateID implements the AggrgateID method of the eventhorizon.Event interface.
-func (e event) AggregateID() uuid.UUID {
+func (e event) AggregateID() eh.ID {
 	return e.dbEvent.AggregateID
 }
 

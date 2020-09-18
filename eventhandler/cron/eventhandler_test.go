@@ -20,10 +20,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestCommandHandler(t *testing.T) {
 	h := mocks.NewEventHandler("test")
@@ -31,7 +35,7 @@ func TestCommandHandler(t *testing.T) {
 
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	expectedEvent := eh.NewEventForAggregate(mocks.EventType, nil, timestamp,
-		mocks.AggregateType, uuid.New(), 1)
+		mocks.AggregateType, eh.NewID(), 1)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

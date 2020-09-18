@@ -1,16 +1,24 @@
-default: services test
+default: services test_integration
 
 .PHONY: test
 test:
 	go test ./...
 
+.PHONY: test_integration
+test_integration:
+	go test -tags integration ./...
+
 .PHONY: test_docker
 test_docker:
 	docker-compose run --rm golang make test
 
+.PHONY: test_integration_docker
+test_integration_docker:
+	docker-compose run --rm golang make test_integration
+
 .PHONY: cover
 cover:
-	go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs -L 1 sh -c
+	go list -f '{{if len .TestGoFiles}}"go test -tags integration -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs -L 1 sh -c
 
 .PHONY: publish_cover
 publish_cover: cover

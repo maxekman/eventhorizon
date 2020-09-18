@@ -19,9 +19,14 @@ import (
 	"testing"
 
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 	"github.com/looplab/eventhorizon/repo"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestReadRepo(t *testing.T) {
 	r := NewRepo()

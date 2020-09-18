@@ -20,11 +20,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
 
+func init() {
+	google_uuid.UseAsIDType()
+}
+
 func TestModelJSON(t *testing.T) {
-	id := uuid.New()
+	id := eh.NewID()
 	now := time.Now()
 
 	// Don't use keys for init, we want to get compiler warnings if we haven't

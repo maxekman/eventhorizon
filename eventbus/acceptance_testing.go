@@ -20,7 +20,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kr/pretty"
 
 	eh "github.com/looplab/eventhorizon"
@@ -72,7 +71,7 @@ func AcceptanceTest(t *testing.T, bus1, bus2 eh.EventBus, timeout time.Duration)
 	ctx := mocks.WithContextOne(context.Background(), "testval")
 
 	// Without handler.
-	id := uuid.New()
+	id := eh.NewID()
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	event1 := eh.NewEventForAggregate(mocks.EventType, &mocks.EventData{Content: "event1"}, timestamp,
 		mocks.AggregateType, id, 1)

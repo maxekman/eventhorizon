@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,8 +25,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
-	// Register uuid.UUID as BSON type.
-	_ "github.com/looplab/eventhorizon/types/mongodb"
+	// Register eh.ID as BSON type.
+	_ "github.com/looplab/eventhorizon/encoding/bson"
 
 	eh "github.com/looplab/eventhorizon"
 )
@@ -90,7 +89,7 @@ func (r *Repo) Parent() eh.ReadRepo {
 }
 
 // Find implements the Find method of the eventhorizon.ReadRepo interface.
-func (r *Repo) Find(ctx context.Context, id uuid.UUID) (eh.Entity, error) {
+func (r *Repo) Find(ctx context.Context, id eh.ID) (eh.Entity, error) {
 	if r.factoryFn == nil {
 		return nil, eh.RepoError{
 			Err:       ErrModelNotSet,
@@ -274,7 +273,7 @@ func (r *Repo) FindCustom(ctx context.Context, f func(context.Context, *mongo.Co
 
 // Save implements the Save method of the eventhorizon.WriteRepo interface.
 func (r *Repo) Save(ctx context.Context, entity eh.Entity) error {
-	if entity.EntityID() == uuid.Nil {
+	if entity.EntityID() == nil || entity.EntityID() == eh.EmptyID() {
 		return eh.RepoError{
 			Err:       eh.ErrCouldNotSaveEntity,
 			BaseErr:   eh.ErrMissingEntityID,
@@ -303,7 +302,7 @@ func (r *Repo) Save(ctx context.Context, entity eh.Entity) error {
 }
 
 // Remove implements the Remove method of the eventhorizon.WriteRepo interface.
-func (r *Repo) Remove(ctx context.Context, id uuid.UUID) error {
+func (r *Repo) Remove(ctx context.Context, id eh.ID) error {
 	c := r.client.Database(r.dbName(ctx)).Collection(r.collection)
 
 	if r, err := c.DeleteOne(ctx, bson.M{"_id": id.String()}); err != nil {

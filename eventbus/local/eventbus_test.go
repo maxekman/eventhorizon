@@ -19,7 +19,12 @@ import (
 	"time"
 
 	"github.com/looplab/eventhorizon/eventbus"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestEventBus(t *testing.T) {
 	group := NewGroup()

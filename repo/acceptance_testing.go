@@ -20,7 +20,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -37,7 +36,7 @@ import (
 //
 func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 	// Find non-existing item.
-	entity, err := repo.Find(ctx, uuid.New())
+	entity, err := repo.Find(ctx, eh.NewID())
 	if rrErr, ok := err.(eh.RepoError); !ok || rrErr.Err != eh.ErrEntityNotFound {
 		t.Error("there should be a ErrEntityNotFound error:", err)
 	}
@@ -66,7 +65,7 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 
 	// Save and find one item.
 	entity1 := &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Content:   "entity1",
 		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 	}
@@ -112,7 +111,7 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 
 	// Save with another ID.
 	entity2 := &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Content:   "entity2",
 		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 	}

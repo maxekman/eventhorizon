@@ -21,13 +21,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 )
 
+func init() {
+	google_uuid.UseAsIDType()
+}
+
 func TestEventHandler(t *testing.T) {
-	id := uuid.New()
+	id := eh.NewID()
 	eventData := &mocks.EventData{Content: "event1"}
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	event := eh.NewEventForAggregate(mocks.EventType, eventData, timestamp,

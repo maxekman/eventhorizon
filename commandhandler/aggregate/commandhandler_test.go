@@ -20,14 +20,18 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 )
 
+func init() {
+	google_uuid.UseAsIDType()
+}
+
 func TestNewCommandHandler(t *testing.T) {
 	store := &mocks.AggregateStore{
-		Aggregates: make(map[uuid.UUID]eh.Aggregate),
+		Aggregates: make(map[eh.ID]eh.Aggregate),
 	}
 	h, err := NewCommandHandler(mocks.AggregateType, store)
 	if err != nil {
@@ -69,7 +73,7 @@ func TestCommandHandler(t *testing.T) {
 
 func TestCommandHandler_AggregateNotFound(t *testing.T) {
 	store := &mocks.AggregateStore{
-		Aggregates: map[uuid.UUID]eh.Aggregate{},
+		Aggregates: map[eh.ID]eh.Aggregate{},
 	}
 	h, err := NewCommandHandler(mocks.AggregateType, store)
 	if err != nil {
@@ -80,7 +84,7 @@ func TestCommandHandler_AggregateNotFound(t *testing.T) {
 	}
 
 	cmd := &mocks.Command{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "command1",
 	}
 	err = h.HandleCommand(context.Background(), cmd)
@@ -124,7 +128,7 @@ func TestCommandHandler_NoHandlers(t *testing.T) {
 	_, h, _ := createAggregateAndHandler(t)
 
 	cmd := &mocks.Command{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "command1",
 	}
 	err := h.HandleCommand(context.Background(), cmd)
@@ -134,9 +138,9 @@ func TestCommandHandler_NoHandlers(t *testing.T) {
 }
 
 func BenchmarkCommandHandler(b *testing.B) {
-	a := mocks.NewAggregate(uuid.New())
+	a := mocks.NewAggregate(eh.NewID())
 	store := &mocks.AggregateStore{
-		Aggregates: map[uuid.UUID]eh.Aggregate{
+		Aggregates: map[eh.ID]eh.Aggregate{
 			a.EntityID(): a,
 		},
 	}
@@ -160,9 +164,9 @@ func BenchmarkCommandHandler(b *testing.B) {
 }
 
 func createAggregateAndHandler(t *testing.T) (*mocks.Aggregate, *CommandHandler, *mocks.AggregateStore) {
-	a := mocks.NewAggregate(uuid.New())
+	a := mocks.NewAggregate(eh.NewID())
 	store := &mocks.AggregateStore{
-		Aggregates: map[uuid.UUID]eh.Aggregate{
+		Aggregates: map[eh.ID]eh.Aggregate{
 			a.EntityID(): a,
 		},
 	}

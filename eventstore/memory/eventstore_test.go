@@ -20,7 +20,12 @@ import (
 
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/eventstore"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestEventStore(t *testing.T) {
 	store := NewEventStore()

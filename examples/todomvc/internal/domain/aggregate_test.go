@@ -21,19 +21,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kr/pretty"
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/aggregatestore/events"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestAggregateHandleCommand(t *testing.T) {
 	TimeNow = func() time.Time {
 		return time.Date(2017, time.July, 10, 23, 0, 0, 0, time.Local)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	cases := map[string]struct {
 		agg            *Aggregate
 		cmd            eh.Command
@@ -431,7 +435,7 @@ func TestAggregateApplyEvent(t *testing.T) {
 		return time.Date(2017, time.July, 10, 23, 0, 0, 0, time.Local)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	cases := map[string]struct {
 		agg         *Aggregate
 		event       eh.Event

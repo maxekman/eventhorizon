@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// +build integration
+
 package mongodb
 
 import (
@@ -21,7 +23,12 @@ import (
 
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/eventstore"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestEventStore(t *testing.T) {
 	// Use MongoDB in Docker with fallback to localhost.

@@ -23,8 +23,13 @@ import (
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/eventstore"
 	"github.com/looplab/eventhorizon/eventstore/memory"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestEventStore(t *testing.T) {
 	baseStore := memory.NewEventStore()

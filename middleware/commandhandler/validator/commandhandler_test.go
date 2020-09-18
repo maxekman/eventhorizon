@@ -20,17 +20,21 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestCommandHandler_Immediate(t *testing.T) {
 	inner := &mocks.CommandHandler{}
 	m := NewMiddleware()
 	h := eh.UseCommandHandlerMiddleware(inner, m)
 	cmd := mocks.Command{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "content",
 	}
 	if err := h.HandleCommand(context.Background(), cmd); err != nil {
@@ -46,7 +50,7 @@ func TestCommandHandler_WithValidationError(t *testing.T) {
 	m := NewMiddleware()
 	h := eh.UseCommandHandlerMiddleware(inner, m)
 	cmd := &mocks.Command{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "content",
 	}
 	e := errors.New("a validation error")
@@ -64,7 +68,7 @@ func TestCommandHandler_WithValidationNoError(t *testing.T) {
 	m := NewMiddleware()
 	h := eh.UseCommandHandlerMiddleware(inner, m)
 	cmd := &mocks.Command{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "content",
 	}
 	c := CommandWithValidation(cmd, func() error { return nil })

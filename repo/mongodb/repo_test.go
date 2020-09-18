@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// +build integration
+
 package mongodb
 
 import (
@@ -21,14 +23,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/mocks"
 	"github.com/looplab/eventhorizon/repo"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestReadRepo(t *testing.T) {
 	// Local Mongo testing with Docker
@@ -77,7 +83,7 @@ func TestReadRepo(t *testing.T) {
 func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 	// Insert a custom item.
 	modelCustom := &mocks.Model{
-		ID:        uuid.New(),
+		ID:        eh.NewID(),
 		Content:   "modelCustom",
 		CreatedAt: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 	}
@@ -122,7 +128,7 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 	}
 
 	modelCustom2 := &mocks.Model{
-		ID:      uuid.New(),
+		ID:      eh.NewID(),
 		Content: "modelCustom2",
 	}
 	if err := r.Collection(ctx, func(ctx context.Context, c *mongo.Collection) error {

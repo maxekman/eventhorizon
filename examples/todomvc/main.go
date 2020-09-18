@@ -19,10 +19,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/google/uuid"
+	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/examples/todomvc/internal/domain"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/repo/mongodb"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func main() {
 	log.Println("starting TodoMVC backend")
@@ -38,7 +43,7 @@ func main() {
 		log.Println("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {

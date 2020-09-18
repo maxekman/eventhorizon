@@ -23,13 +23,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/eventhandler/waiter"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/repo/mongodb"
 
 	"github.com/looplab/eventhorizon/examples/todomvc/internal/domain"
 )
+
+func init() {
+	google_uuid.UseAsIDType()
+}
 
 func TestStaticFiles(t *testing.T) {
 	h, err := NewHandler()
@@ -72,7 +76,7 @@ func TestGetAll(t *testing.T) {
 		t.Error("the body should be correct:", string(w.Body.Bytes()))
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -119,7 +123,7 @@ func TestCreate(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	r := httptest.NewRequest("POST", "/api/todos/create",
 		strings.NewReader(`{"id":"`+id.String()+`"}`))
 	w := httptest.NewRecorder()
@@ -176,7 +180,7 @@ func TestDelete(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -224,7 +228,7 @@ func TestAddItem(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -292,7 +296,7 @@ func TestRemoveItem(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -361,7 +365,7 @@ func TestRemoveCompleted(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -450,7 +454,7 @@ func TestSetItemDesc(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -524,7 +528,7 @@ func TestCheckItem(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {
@@ -609,7 +613,7 @@ func TestCheckAllItems(t *testing.T) {
 		t.Log("could not clear DB:", err)
 	}
 
-	id := uuid.New()
+	id := eh.NewID()
 	if err := h.CommandHandler.HandleCommand(context.Background(), &domain.Create{
 		ID: id,
 	}); err != nil {

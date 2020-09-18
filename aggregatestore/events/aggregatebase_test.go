@@ -20,12 +20,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
 
+func init() {
+	google_uuid.UseAsIDType()
+}
+
 func TestNewAggregateBase(t *testing.T) {
-	id := uuid.New()
+	id := eh.NewID()
 	agg := NewAggregateBase(TestAggregateType, id)
 	if agg == nil {
 		t.Fatal("there should be an aggregate")
@@ -42,7 +46,7 @@ func TestNewAggregateBase(t *testing.T) {
 }
 
 func TestAggregateVersion(t *testing.T) {
-	agg := NewAggregateBase(TestAggregateType, uuid.New())
+	agg := NewAggregateBase(TestAggregateType, eh.NewID())
 	if agg.Version() != 0 {
 		t.Error("the version should be 0:", agg.Version())
 	}
@@ -54,7 +58,7 @@ func TestAggregateVersion(t *testing.T) {
 }
 
 func TestAggregateEvents(t *testing.T) {
-	id := uuid.New()
+	id := eh.NewID()
 	agg := NewTestAggregate(id)
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	event1 := agg.StoreEvent(TestAggregateEventType, &TestEventData{"event1"}, timestamp)
@@ -102,7 +106,7 @@ func TestAggregateEvents(t *testing.T) {
 		t.Error("the version should be 1 after clearing uncommitted events (without applying any):", event3.Version())
 	}
 
-	agg = NewTestAggregate(uuid.New())
+	agg = NewTestAggregate(eh.NewID())
 	event1 = agg.StoreEvent(TestAggregateEventType, &TestEventData{"event1"}, timestamp)
 	event2 = agg.StoreEvent(TestAggregateEventType, &TestEventData{"event2"}, timestamp)
 	events = agg.Events()
@@ -118,7 +122,7 @@ func TestAggregateEvents(t *testing.T) {
 }
 
 func init() {
-	eh.RegisterAggregate(func(id uuid.UUID) eh.Aggregate {
+	eh.RegisterAggregate(func(id eh.ID) eh.Aggregate {
 		return NewTestAggregate(id)
 	})
 
@@ -132,13 +136,13 @@ const (
 )
 
 type TestAggregateCommand struct {
-	TestID  uuid.UUID
+	TestID  eh.ID
 	Content string
 }
 
 var _ = eh.Command(TestAggregateCommand{})
 
-func (t TestAggregateCommand) AggregateID() uuid.UUID          { return t.TestID }
+func (t TestAggregateCommand) AggregateID() eh.ID              { return t.TestID }
 func (t TestAggregateCommand) AggregateType() eh.AggregateType { return TestAggregateType }
 func (t TestAggregateCommand) CommandType() eh.CommandType     { return TestAggregateCommandType }
 
@@ -153,7 +157,7 @@ type TestAggregate struct {
 
 var _ = Aggregate(&TestAggregate{})
 
-func NewTestAggregate(id uuid.UUID) *TestAggregate {
+func NewTestAggregate(id eh.ID) *TestAggregate {
 	return &TestAggregate{
 		AggregateBase: NewAggregateBase(TestAggregateType, id),
 	}
