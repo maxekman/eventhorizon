@@ -20,13 +20,12 @@ import (
 	"net/http"
 
 	"github.com/looplab/eventhorizon/examples/todomvc/internal/domain"
-	"github.com/looplab/eventhorizon/id/google_uuid"
 	ehid "github.com/looplab/eventhorizon/id/google_uuid"
 	"github.com/looplab/eventhorizon/repo/mongodb"
 )
 
 func init() {
-	google_uuid.UseAsIDType()
+	ehid.UseAsIDType()
 }
 
 func main() {

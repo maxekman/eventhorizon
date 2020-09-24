@@ -50,6 +50,11 @@ func (s *ResponseSaga) SagaType() saga.Type {
 func (s *ResponseSaga) RunSaga(ctx context.Context, event eh.Event) []eh.Command {
 	switch event.EventType() {
 	case InviteAcceptedEvent:
+		// id, ok := event.AggregateID().(ehid.ID)
+		// if !ok {
+		// 	return nil
+		// }
+
 		// Do nothing for already accepted guests.
 		s.acceptedGuestsMu.RLock()
 		ok, _ := s.acceptedGuests[event.AggregateID()]

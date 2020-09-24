@@ -41,15 +41,15 @@ func UseAsIDType() {
 type ID string
 
 // EHID implements the EHID method of the eventhorizon.ID interface.
-func (ID) EHID() {}
+func (*ID) EHID() {}
 
 // String implements the Stringer interface for UUID.
-func (i ID) String() string {
-	return string(i)
+func (i *ID) String() string {
+	return string(*i)
 }
 
 // NewID creates a new ID with a UUID v4 string as the underlying type.
-func NewID() ID {
+func NewID() *ID {
 	var u [16]byte
 
 	// Set all bits to randomly (or pseudo-randomly) chosen values.
@@ -64,12 +64,14 @@ func NewID() ID {
 	// Set the version to 4.
 	u[6] = (u[6] & 0xF) | 0x40
 
-	return ID(fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:]))
+	id := ID(fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:]))
+	return &id
 }
 
 // EmptyID creates an ID with Google UUID as the underlying type.
-func EmptyID() ID {
-	return ID("")
+func EmptyID() *ID {
+	id := ID("")
+	return &id
 }
 
 // ParseID creates a ID object from given hex string representation.
@@ -79,7 +81,7 @@ func EmptyID() ID {
 //     ParseUUID("{6ba7b814-9dad-11d1-80b4-00c04fd430c8}")
 //     ParseUUID("urn:uuid:6ba7b814-9dad-11d1-80b4-00c04fd430c8")
 //
-func ParseID(s string) (ID, error) {
+func ParseID(s string) (*ID, error) {
 	if s == "" {
 		return EmptyID(), nil
 	}
@@ -87,7 +89,8 @@ func ParseID(s string) (ID, error) {
 	if md == nil {
 		return EmptyID(), errors.New("Invalid UUID string")
 	}
-	return ID(fmt.Sprintf("%s-%s-%s-%s-%s", md[2], md[3], md[4], md[5], md[6])), nil
+	id := ID(fmt.Sprintf("%s-%s-%s-%s-%s", md[2], md[3], md[4], md[5], md[6]))
+	return &id, nil
 }
 
 // Pattern used to parse hex string representation of the UUID.
@@ -100,7 +103,7 @@ const hexPattern = "^(urn\\:uuid\\:)?\\{?([a-f0-9]{8})-([a-f0-9]{4})-" +
 var re = regexp.MustCompile(hexPattern)
 
 // MarshalJSON turns UUID into a json.Marshaller.
-func (i ID) MarshalJSON() ([]byte, error) {
+func (i *ID) MarshalJSON() ([]byte, error) {
 	// Pack the string representation in quotes
 	return []byte(fmt.Sprintf(`"%s"`, i.String())), nil
 }
@@ -120,6 +123,26 @@ func (i *ID) UnmarshalJSON(data []byte) error {
 	}
 
 	// Dereference pointer value and store parsed
-	*i = parsed
+	*i = *parsed
+	// copy([]byte(i), []byte(parsed))
+	fmt.Println(parsed)
 	return nil
 }
+
+// func (i *ID) UnmarshalJSON(data []byte) error {
+// 	// Data is expected to be a json string, like: "819c4ff4-31b4-4519-5d24-3c4a129b8649"
+// 	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' {
+// 		return fmt.Errorf("invalid UUID in JSON, %v is not a valid JSON string", string(data))
+// 	}
+
+// 	// Grab string value without the surrounding " characters
+// 	value := string(data[1 : len(data)-1])
+// 	parsed, err := ParseID(value)
+// 	if err != nil {
+// 		return fmt.Errorf("invalid UUID in JSON, %v: %v", value, err)
+// 	}
+
+// 	// Dereference pointer value and store parsed
+// 	*i = parsed
+// 	return nil
+// }

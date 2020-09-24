@@ -13,6 +13,8 @@ type ID interface {
 
 	// String returns a string representation of the ID.
 	String() string
+
+	UnmarshalJSON([]byte) error
 }
 
 // NewID creates a new ID.

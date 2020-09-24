@@ -18,6 +18,7 @@ import (
 	"time"
 
 	eh "github.com/looplab/eventhorizon"
+	ehid "github.com/looplab/eventhorizon/id/google_uuid"
 )
 
 // TodoItem represents each item that can be completed in the todo list.
@@ -29,7 +30,7 @@ type TodoItem struct {
 
 // TodoList is the read model for the todo list.
 type TodoList struct {
-	ID        eh.ID       `json:"id"         bson:"_id"`
+	ID        ehid.ID     `json:"id"         bson:"_id"`
 	Version   int         `json:"version"    bson:"version"`
 	Items     []*TodoItem `json:"items"      bson:"items"`
 	CreatedAt time.Time   `json:"created_at" bson:"created_at"`

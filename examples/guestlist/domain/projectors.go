@@ -74,6 +74,11 @@ func (p *InvitationProjector) Project(ctx context.Context, event eh.Event, entit
 		if !ok {
 			return nil, fmt.Errorf("projector: invalid event data type: %v", event.Data())
 		}
+		// id, ok := event.AggregateID().(ehid.ID)
+		// if !ok {
+		// 	return nil, fmt.Errorf("projector: invalid ID data type: %v", event.AggregateID())
+		// }
+		// i.ID = id
 		i.ID = event.AggregateID()
 		i.Name = data.Name
 		i.Age = data.Age
@@ -147,7 +152,12 @@ func (p *GuestListProjector) HandleEvent(ctx context.Context, event eh.Event) er
 	var g *GuestList
 	m, err := p.repo.Find(ctx, p.eventID)
 	if rrErr, ok := err.(eh.RepoError); ok && rrErr.Err == eh.ErrEntityNotFound {
+		// id, ok := p.eventID.(ehid.ID)
+		// if !ok {
+		// 	return errors.New("projector: incorrect ID type")
+		// }
 		g = &GuestList{
+			// ID: id,
 			ID: p.eventID,
 		}
 	} else if err != nil {

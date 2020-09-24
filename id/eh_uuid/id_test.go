@@ -20,6 +20,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	eh "github.com/looplab/eventhorizon"
 )
 
 func TestNewID(t *testing.T) {
@@ -32,7 +34,7 @@ func TestNewID(t *testing.T) {
 		t.Error("the IDs should be unique")
 	}
 
-	parts := strings.Split(string(id1), "-")
+	parts := strings.Split(string(*id1), "-")
 	hash := parts[0] + parts[1] + parts[2] + parts[3] + parts[4]
 	b, err := hex.DecodeString(hash)
 	if err != nil {
@@ -48,7 +50,7 @@ func TestNewID(t *testing.T) {
 	}
 
 	re := regexp.MustCompile("^[a-z0-9]{8}-[a-z0-9]{4}-[1-5][a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12}$")
-	if !re.MatchString(string(id1)) {
+	if !re.MatchString(string(*id1)) {
 		t.Error("the string format should be correct:", id1)
 	}
 }
@@ -68,7 +70,7 @@ func TestParseID(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if parsed != id {
+	if *parsed != id {
 		t.Error("the ID should be correct:", parsed)
 	}
 
@@ -76,7 +78,7 @@ func TestParseID(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if parsed != id {
+	if *parsed != id {
 		t.Error("the ID should be correct:", parsed)
 	}
 
@@ -84,7 +86,7 @@ func TestParseID(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if parsed != id {
+	if *parsed != id {
 		t.Error("the ID should be correct:", parsed)
 	}
 
@@ -105,7 +107,7 @@ func TestString(t *testing.T) {
 }
 
 type jsonType struct {
-	ID ID
+	ID eh.ID
 }
 
 func TestMarshalJSON(t *testing.T) {
@@ -141,7 +143,7 @@ func TestMarshalJSON(t *testing.T) {
 func TestUnmarshalJSON(t *testing.T) {
 	// Empty UUID.
 	js := []byte(`{"ID":""}`)
-	v := jsonType{}
+	v := jsonType{ID: NewID()}
 	err := json.Unmarshal(js, &v)
 	if err != nil {
 		t.Error("there should be no error:", err)
@@ -156,7 +158,7 @@ func TestUnmarshalJSON(t *testing.T) {
 
 	// Normal UUID.
 	js = []byte(`{"ID":"a4da289d-466d-4a56-4521-1dbd455aa0cd"}`)
-	v = jsonType{}
+	v = jsonType{ID: NewID()}
 	err = json.Unmarshal(js, &v)
 	if err != nil {
 		t.Error("there should be no error:", err)
