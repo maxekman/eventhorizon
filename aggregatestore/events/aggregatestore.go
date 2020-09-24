@@ -19,6 +19,7 @@ import (
 	"errors"
 
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/factory"
 )
 
 // ErrInvalidEventStore is when a dispatcher is created with a nil event store.
@@ -104,7 +105,7 @@ func NewAggregateStore(store eh.EventStore, bus eh.EventBus) (*AggregateStore, e
 // type with the ID and then applies all events to it, thus making it the most
 // current version of the aggregate.
 func (r *AggregateStore) Load(ctx context.Context, aggregateType eh.AggregateType, id eh.ID) (eh.Aggregate, error) {
-	agg, err := eh.CreateAggregate(aggregateType, id)
+	agg, err := factory.CreateAggregate(aggregateType, id)
 	if err != nil {
 		return nil, err
 	}

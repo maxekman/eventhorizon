@@ -19,10 +19,11 @@ import (
 	"time"
 
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/factory"
 )
 
 func init() {
-	eh.RegisterAggregate(func(id eh.ID) eh.Aggregate {
+	factory.RegisterAggregate(func(id eh.ID) eh.Aggregate {
 		return NewAggregate(id)
 	})
 

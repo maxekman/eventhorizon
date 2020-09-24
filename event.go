@@ -123,7 +123,7 @@ func (e event) Version() int {
 
 // String implements the String method of the Event interface.
 func (e event) String() string {
-	return fmt.Sprintf("%s@%d", e.eventType, e.version)
+	return fmt.Sprintf("%s@%d (%s)", e.eventType, e.version, e.aggregateID)
 }
 
 var eventDataFactories = make(map[EventType]func() EventData)

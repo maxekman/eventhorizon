@@ -18,6 +18,7 @@ import (
 	"context"
 
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/id/google_uuid"
 )
 
 // EventHandler waits for certain events to match a criteria.
@@ -57,7 +58,7 @@ func (h *EventHandler) HandleEvent(ctx context.Context, event eh.Event) error {
 // interesting events by analysing the event data.
 func (h *EventHandler) Listen(match func(eh.Event) bool) *EventListener {
 	l := &EventListener{
-		id:         eh.NewID(),
+		id:         google_uuid.NewID().String(),
 		inbox:      make(chan eh.Event, 1),
 		match:      match,
 		unregister: h.unregister,
@@ -70,7 +71,7 @@ func (h *EventHandler) Listen(match func(eh.Event) bool) *EventListener {
 
 // EventListener receives events from an EventHandler.
 type EventListener struct {
-	id         eh.ID
+	id         string
 	inbox      chan eh.Event
 	match      func(eh.Event) bool
 	unregister chan *EventListener
@@ -97,7 +98,7 @@ func (l *EventListener) Close() {
 }
 
 func (h *EventHandler) run() {
-	listeners := map[eh.ID]*EventListener{}
+	listeners := map[string]*EventListener{}
 	for {
 		select {
 		case l := <-h.register:

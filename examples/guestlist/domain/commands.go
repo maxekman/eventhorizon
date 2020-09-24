@@ -16,6 +16,7 @@ package domain
 
 import (
 	eh "github.com/looplab/eventhorizon"
+	ehid "github.com/looplab/eventhorizon/id/google_uuid"
 )
 
 func init() {
@@ -38,7 +39,7 @@ const (
 
 // CreateInvite is a command for creating invites.
 type CreateInvite struct {
-	ID   eh.ID
+	ID   ehid.ID
 	Name string
 	Age  int `eh:"optional"`
 }
@@ -49,7 +50,7 @@ func (c CreateInvite) CommandType() eh.CommandType     { return CreateInviteComm
 
 // AcceptInvite is a command for accepting invites.
 type AcceptInvite struct {
-	ID eh.ID
+	ID ehid.ID
 }
 
 func (c AcceptInvite) AggregateID() eh.ID              { return c.ID }
@@ -58,7 +59,7 @@ func (c AcceptInvite) CommandType() eh.CommandType     { return AcceptInviteComm
 
 // DeclineInvite is a command for declining invites.
 type DeclineInvite struct {
-	ID eh.ID
+	ID ehid.ID
 }
 
 func (c DeclineInvite) AggregateID() eh.ID              { return c.ID }
@@ -67,7 +68,7 @@ func (c DeclineInvite) CommandType() eh.CommandType     { return DeclineInviteCo
 
 // ConfirmInvite is a command for confirming invites.
 type ConfirmInvite struct {
-	ID eh.ID
+	ID ehid.ID
 }
 
 func (c ConfirmInvite) AggregateID() eh.ID              { return c.ID }
@@ -76,7 +77,7 @@ func (c ConfirmInvite) CommandType() eh.CommandType     { return ConfirmInviteCo
 
 // DenyInvite is a command for denying invites.
 type DenyInvite struct {
-	ID eh.ID
+	ID ehid.ID
 }
 
 func (c DenyInvite) AggregateID() eh.ID              { return c.ID }

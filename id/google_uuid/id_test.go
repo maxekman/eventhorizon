@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package eh_uuid
+package google_uuid
 
 import (
 	"encoding/hex"
@@ -20,6 +20,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestNewID(t *testing.T) {
@@ -32,7 +34,7 @@ func TestNewID(t *testing.T) {
 		t.Error("the IDs should be unique")
 	}
 
-	parts := strings.Split(string(id1), "-")
+	parts := strings.Split(id1.String(), "-")
 	hash := parts[0] + parts[1] + parts[2] + parts[3] + parts[4]
 	b, err := hex.DecodeString(hash)
 	if err != nil {
@@ -48,13 +50,13 @@ func TestNewID(t *testing.T) {
 	}
 
 	re := regexp.MustCompile("^[a-z0-9]{8}-[a-z0-9]{4}-[1-5][a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{12}$")
-	if !re.MatchString(string(id1)) {
+	if !re.MatchString(id1.String()) {
 		t.Error("the string format should be correct:", id1)
 	}
 }
 
 func TestParseID(t *testing.T) {
-	id := ID("a4da289d-466d-4a56-4521-1dbd455aa0cd")
+	id := ID(uuid.MustParse("a4da289d-466d-4a56-4521-1dbd455aa0cd"))
 
 	parsed, err := ParseID("")
 	if err != nil {
@@ -98,7 +100,7 @@ func TestParseID(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	id := ID("a4da289d-466d-4a56-4521-1dbd455aa0cd")
+	id := ID(uuid.MustParse("a4da289d-466d-4a56-4521-1dbd455aa0cd"))
 	if id.String() != "a4da289d-466d-4a56-4521-1dbd455aa0cd" {
 		t.Error("the ID should be correct:", id)
 	}

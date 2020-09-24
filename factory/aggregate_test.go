@@ -12,22 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package eventhorizon
+package factory
 
 import (
 	"context"
 	"testing"
+
+	eh "github.com/looplab/eventhorizon"
+	ehid "github.com/looplab/eventhorizon/id/google_uuid"
 )
 
+func init() {
+	ehid.UseAsIDType()
+}
+
 func TestCreateAggregate(t *testing.T) {
-	id := NewID()
+	id := ehid.NewID()
 	aggregate, err := CreateAggregate(TestAggregateRegisterType, id)
 	if err != ErrAggregateNotRegistered {
 		t.Error("there should be a aggregate not registered error:", err)
 	}
 
-	RegisterAggregate(func(id ID) Aggregate {
-		return &TestAggregateRegister{id: id}
+	RegisterAggregate(func(id eh.ID) eh.Aggregate {
+		if id, ok := id.(ehid.ID); ok {
+			return &TestAggregateRegister{id: id}
+		}
+		return nil
 	})
 
 	aggregate, err = CreateAggregate(TestAggregateRegisterType, id)
@@ -49,8 +59,11 @@ func TestRegisterAggregateEmptyName(t *testing.T) {
 			t.Error("there should have been a panic:", r)
 		}
 	}()
-	RegisterAggregate(func(id ID) Aggregate {
-		return &TestAggregateRegisterEmpty{id: id}
+	RegisterAggregate(func(id eh.ID) eh.Aggregate {
+		if id, ok := id.(ehid.ID); ok {
+			return &TestAggregateRegisterEmpty{id: id}
+		}
+		return nil
 	})
 }
 
@@ -60,7 +73,7 @@ func TestRegisterAggregateNil(t *testing.T) {
 			t.Error("there should have been a panic:", r)
 		}
 	}()
-	RegisterAggregate(func(id ID) Aggregate { return nil })
+	RegisterAggregate(func(id eh.ID) eh.Aggregate { return nil })
 }
 
 func TestRegisterAggregateTwice(t *testing.T) {
@@ -69,61 +82,67 @@ func TestRegisterAggregateTwice(t *testing.T) {
 			t.Error("there should have been a panic:", r)
 		}
 	}()
-	RegisterAggregate(func(id ID) Aggregate {
-		return &TestAggregateRegisterTwice{id: id}
+	RegisterAggregate(func(id eh.ID) eh.Aggregate {
+		if id, ok := id.(ehid.ID); ok {
+			return &TestAggregateRegisterTwice{id: id}
+		}
+		return nil
 	})
-	RegisterAggregate(func(id ID) Aggregate {
-		return &TestAggregateRegisterTwice{id: id}
+	RegisterAggregate(func(id eh.ID) eh.Aggregate {
+		if id, ok := id.(ehid.ID); ok {
+			return &TestAggregateRegisterTwice{id: id}
+		}
+		return nil
 	})
 }
 
 const (
-	TestAggregateRegisterType      AggregateType = "TestAggregateRegister"
-	TestAggregateRegisterEmptyType AggregateType = ""
-	TestAggregateRegisterTwiceType AggregateType = "TestAggregateRegisterTwice"
+	TestAggregateRegisterType      eh.AggregateType = "TestAggregateRegister"
+	TestAggregateRegisterEmptyType eh.AggregateType = ""
+	TestAggregateRegisterTwiceType eh.AggregateType = "TestAggregateRegisterTwice"
 )
 
 type TestAggregateRegister struct {
-	id ID
+	id ehid.ID
 }
 
-var _ = Aggregate(&TestAggregateRegister{})
+var _ = eh.Aggregate(&TestAggregateRegister{})
 
-func (a *TestAggregateRegister) EntityID() ID { return a.id }
+func (a *TestAggregateRegister) EntityID() eh.ID { return a.id }
 
-func (a *TestAggregateRegister) AggregateType() AggregateType {
+func (a *TestAggregateRegister) AggregateType() eh.AggregateType {
 	return TestAggregateRegisterType
 }
-func (a *TestAggregateRegister) HandleCommand(ctx context.Context, cmd Command) error {
+func (a *TestAggregateRegister) HandleCommand(ctx context.Context, cmd eh.Command) error {
 	return nil
 }
 
 type TestAggregateRegisterEmpty struct {
-	id ID
+	id ehid.ID
 }
 
-var _ = Aggregate(&TestAggregateRegisterEmpty{})
+var _ = eh.Aggregate(&TestAggregateRegisterEmpty{})
 
-func (a *TestAggregateRegisterEmpty) EntityID() ID { return a.id }
+func (a *TestAggregateRegisterEmpty) EntityID() eh.ID { return a.id }
 
-func (a *TestAggregateRegisterEmpty) AggregateType() AggregateType {
+func (a *TestAggregateRegisterEmpty) AggregateType() eh.AggregateType {
 	return TestAggregateRegisterEmptyType
 }
-func (a *TestAggregateRegisterEmpty) HandleCommand(ctx context.Context, cmd Command) error {
+func (a *TestAggregateRegisterEmpty) HandleCommand(ctx context.Context, cmd eh.Command) error {
 	return nil
 }
 
 type TestAggregateRegisterTwice struct {
-	id ID
+	id ehid.ID
 }
 
-var _ = Aggregate(&TestAggregateRegisterTwice{})
+var _ = eh.Aggregate(&TestAggregateRegisterTwice{})
 
-func (a *TestAggregateRegisterTwice) EntityID() ID { return a.id }
+func (a *TestAggregateRegisterTwice) EntityID() eh.ID { return a.id }
 
-func (a *TestAggregateRegisterTwice) AggregateType() AggregateType {
+func (a *TestAggregateRegisterTwice) AggregateType() eh.AggregateType {
 	return TestAggregateRegisterTwiceType
 }
-func (a *TestAggregateRegisterTwice) HandleCommand(ctx context.Context, cmd Command) error {
+func (a *TestAggregateRegisterTwice) HandleCommand(ctx context.Context, cmd eh.Command) error {
 	return nil
 }

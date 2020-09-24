@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	eh "github.com/looplab/eventhorizon"
+	ehid "github.com/looplab/eventhorizon/id/google_uuid"
 )
 
 // DefaultQueueSize is the default queue size per handler for publishing events.
@@ -106,7 +107,7 @@ func (b *EventBus) channel(m eh.EventMatcher, h eh.EventHandler, observer bool) 
 
 	id := string(h.HandlerType())
 	if observer { // Generate unique ID for each observer.
-		id = fmt.Sprintf("%s-%s", id, eh.NewID())
+		id = fmt.Sprintf("%s-%s", id, ehid.NewID())
 	}
 	return b.group.channel(id)
 }
