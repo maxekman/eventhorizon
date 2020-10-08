@@ -103,6 +103,10 @@ func main() {
 		log.Fatal("could not add event logger: ", err)
 	}
 
+	// The root event handler will provide publishing of events within a DB
+	// transaction to ensure that events are persisted and published atomically.
+	// rootEventHandler := multi.NewEventHandler(eventBus)
+
 	// Create the repository and wrap in a version repository.
 	var todoRepo eh.ReadWriteRepo
 	if todoRepo, err = mongoRepo.NewRepo(dbURL, dbPrefix, "todos"); err != nil {
