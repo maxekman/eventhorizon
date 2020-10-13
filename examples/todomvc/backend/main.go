@@ -31,6 +31,7 @@ import (
 	tracingEventStore "github.com/looplab/eventhorizon/eventstore/tracing"
 	"github.com/looplab/eventhorizon/middleware/commandhandler/tracing"
 	"github.com/looplab/eventhorizon/middleware/eventhandler/observer"
+	mongoOutbox "github.com/looplab/eventhorizon/outbox/mongodb"
 	mongoRepo "github.com/looplab/eventhorizon/repo/mongodb"
 	tracingRepo "github.com/looplab/eventhorizon/repo/tracing"
 	"github.com/looplab/eventhorizon/repo/version"
@@ -66,7 +67,7 @@ func main() {
 		log.Fatal("could not create tracer: ", err)
 	}
 
-	// Create an event bus.
+	// Create a command bus.
 	commandBus := bus.NewCommandHandler()
 
 	// Create the event bus that distributes events.
@@ -93,7 +94,20 @@ func main() {
 	}
 	eventStore = tracingEventStore.NewEventStore(eventStore)
 
+	// Create an outbox for atomiccally publishing events to the bus.
+	outbox, err := mongoOutbox.NewOutbox(url, dbPrefix)
+	if err != nil {
+		log.Fatalf("could not create outbox: %s", err)
+	}
+
+	// Publish events from outbox to the event bus.
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		if err := outbox.Watch(ctx, eventBus); err != nil {
+			log.Fatalf("could not watch outbox: %s", err)
+		}
+	}()
 
 	// Add an event logger as an observer.
 	eventLogger := &EventLogger{}
