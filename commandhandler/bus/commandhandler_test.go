@@ -16,10 +16,11 @@ package bus
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -51,8 +52,10 @@ func TestCommandHandler(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(handler.Commands, []eh.Command{cmd}) {
-		t.Error("the handled command should be correct:", handler.Commands)
+	expected := []eh.Command{cmd}
+	if !cmp.Equal(expected, handler.Commands) {
+		t.Error("the handled command should be correct:")
+		t.Log(cmp.Diff(expected, handler.Commands))
 	}
 	if val, ok := handler.Context.Value("testkey").(string); !ok || val != "testval" {
 		t.Error("the context should be correct:", handler.Context)

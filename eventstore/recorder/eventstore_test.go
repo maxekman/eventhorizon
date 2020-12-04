@@ -16,9 +16,10 @@ package recorder
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/eventstore"
@@ -39,8 +40,9 @@ func TestEventStore(t *testing.T) {
 	store.StopRecording()
 
 	record := store.GetRecord()
-	if !reflect.DeepEqual(record, savedEvents) {
-		t.Error("there should be events recorded:", record)
+	if !cmp.Equal(savedEvents, record, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("there should be events recorded:")
+		t.Log(cmp.Diff(savedEvents, record, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// And then some more recording specific testing.
@@ -69,7 +71,7 @@ func TestEventStore(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	aggregate1events = append(aggregate1events, event1)
+	aggregate1events = append(aggregate1events, event7)
 	record = store.GetRecord()
 	if len(record) != 0 {
 		t.Error("there should be no events recorded:", record)
@@ -80,12 +82,9 @@ func TestEventStore(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	for i, event := range events {
-		if err := mocks.CompareEvents(event, aggregate1events[i]); err != nil {
-			t.Error("the event was incorrect:", err)
-		}
-		if event.Version() != i+1 {
-			t.Error("the event version should be correct:", event, event.Version())
-		}
+	expectedEvents := aggregate1events
+	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 }

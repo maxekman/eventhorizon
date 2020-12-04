@@ -16,11 +16,12 @@ package saga
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -44,8 +45,10 @@ func TestEventHandler(t *testing.T) {
 	if saga.event != event {
 		t.Error("the handled event should be correct:", saga.event)
 	}
-	if !reflect.DeepEqual(commandHandler.Commands, saga.commands) {
-		t.Error("the produced commands should be correct:", commandHandler.Commands)
+	expected := saga.commands
+	if !cmp.Equal(expected, commandHandler.Commands) {
+		t.Error("the produced commands should be correct:")
+		t.Log(cmp.Diff(expected, commandHandler.Commands))
 	}
 }
 

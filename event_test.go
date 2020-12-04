@@ -15,10 +15,10 @@
 package eventhorizon
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )
 
@@ -28,8 +28,10 @@ func TestNewEvent(t *testing.T) {
 	if event.EventType() != TestEventType {
 		t.Error("the event type should be correct:", event.EventType())
 	}
-	if !reflect.DeepEqual(event.Data(), &TestEventData{"event1"}) {
-		t.Error("the data should be correct:", event.Data())
+	expected := &TestEventData{"event1"}
+	if !cmp.Equal(expected, event.Data()) {
+		t.Error("the data should be correct:")
+		t.Log(cmp.Diff(expected, event.Data()))
 	}
 	if !event.Timestamp().Equal(timestamp) {
 		t.Error("the timestamp should not be zero:", event.Timestamp())
@@ -47,8 +49,10 @@ func TestNewEvent(t *testing.T) {
 	if event.EventType() != TestEventType {
 		t.Error("the event type should be correct:", event.EventType())
 	}
-	if !reflect.DeepEqual(event.Data(), &TestEventData{"event1"}) {
-		t.Error("the data should be correct:", event.Data())
+	expected = &TestEventData{"event1"}
+	if !cmp.Equal(expected, event.Data()) {
+		t.Error("the data should be correct:")
+		t.Log(cmp.Diff(expected, event.Data()))
 	}
 	if !event.Timestamp().Equal(timestamp) {
 		t.Error("the timestamp should not be zero:", event.Timestamp())

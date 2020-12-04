@@ -17,10 +17,12 @@ package validator
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -36,8 +38,10 @@ func TestCommandHandler_Immediate(t *testing.T) {
 	if err := h.HandleCommand(context.Background(), cmd); err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(inner.Commands, []eh.Command{cmd}) {
-		t.Error("the command should have been handled:", inner.Commands)
+	expected := []eh.Command{cmd}
+	if !cmp.Equal(expected, inner.Commands) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, inner.Commands))
 	}
 }
 
@@ -71,7 +75,9 @@ func TestCommandHandler_WithValidationNoError(t *testing.T) {
 	if err := h.HandleCommand(context.Background(), c); err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(inner.Commands, []eh.Command{c}) {
-		t.Error("the command should have been handled:", inner.Commands)
+	expected := []eh.Command{c}
+	if !cmp.Equal(expected, inner.Commands, cmp.AllowUnexported(command{}), cmpopts.IgnoreFields(command{}, "validate")) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, inner.Commands, cmp.AllowUnexported(command{})))
 	}
 }

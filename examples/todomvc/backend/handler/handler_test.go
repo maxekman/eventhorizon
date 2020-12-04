@@ -20,11 +20,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 
 	eh "github.com/looplab/eventhorizon"
@@ -174,9 +174,9 @@ func TestCreate(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.
@@ -296,9 +296,9 @@ func TestAddItem(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.
@@ -368,9 +368,9 @@ func TestRemoveItem(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.
@@ -460,9 +460,9 @@ func TestRemoveCompleted(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.
@@ -537,9 +537,9 @@ func TestSetItemDesc(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.
@@ -625,9 +625,9 @@ func TestCheckItem(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.
@@ -716,9 +716,9 @@ func TestCheckAllItems(t *testing.T) {
 		CreatedAt: todo.TimeNow(),
 		UpdatedAt: todo.TimeNow(),
 	}
-	if !reflect.DeepEqual(list, expected) {
-		t.Error("the item should be correct:", list)
-		t.Log("expected:", expected)
+	if !cmp.Equal(expected, list) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, list))
 	}
 
 	// Cancel all handlers and wait.

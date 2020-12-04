@@ -17,11 +17,12 @@ package scheduler
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -37,8 +38,10 @@ func TestCommandHandler_Immediate(t *testing.T) {
 	if err := h.HandleCommand(context.Background(), cmd); err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(inner.Commands, []eh.Command{cmd}) {
-		t.Error("the command should have been handled:", inner.Commands)
+	expected := []eh.Command{cmd}
+	if !cmp.Equal(expected, inner.Commands) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, inner.Commands))
 	}
 }
 
@@ -62,8 +65,10 @@ func TestCommandHandler_Delayed(t *testing.T) {
 
 	time.Sleep(10 * time.Millisecond)
 	inner.RLock()
-	if !reflect.DeepEqual(inner.Commands, []eh.Command{c}) {
-		t.Error("the command should have been handled:", inner.Commands)
+	expected := []eh.Command{c}
+	if !cmp.Equal(expected, inner.Commands, cmp.AllowUnexported(command{})) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, inner.Commands, cmp.AllowUnexported(command{})))
 	}
 	inner.RUnlock()
 }
@@ -80,8 +85,10 @@ func TestCommandHandler_ZeroTime(t *testing.T) {
 	if err := h.HandleCommand(context.Background(), c); err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(inner.Commands, []eh.Command{c}) {
-		t.Error("the command should have been handled:", inner.Commands)
+	expected := []eh.Command{c}
+	if !cmp.Equal(expected, inner.Commands, cmp.AllowUnexported(command{})) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, inner.Commands, cmp.AllowUnexported(command{})))
 	}
 }
 

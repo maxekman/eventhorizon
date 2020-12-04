@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )
 
@@ -62,6 +63,10 @@ func (et EventType) String() string {
 
 // EventData is any additional data for an event.
 type EventData interface{}
+
+// EmptyEvent is an empty event, useful for testing with the cmp.AllowUnexported
+// option for cmp.Equal().
+var EmptyEvent Event = event{}
 
 // NewEvent creates a new event with a type and data, setting its timestamp.
 func NewEvent(eventType EventType, data EventData, timestamp time.Time) Event {
@@ -186,3 +191,9 @@ func CreateEventData(eventType EventType) (EventData, error) {
 
 var eventDataFactories = make(map[EventType]func() EventData)
 var eventDataFactoriesMu sync.RWMutex
+
+// AllowUnexportedEvent is a cmp.Option for allowing comparisson of the default
+// internal representation of eh.Event.
+func AllowUnexportedEvent() cmp.Option {
+	return cmp.AllowUnexported(event{})
+}

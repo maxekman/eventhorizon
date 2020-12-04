@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
@@ -128,13 +129,9 @@ func AcceptanceTest(t *testing.T, ctx context.Context, store eh.EventStore) []eh
 		event3,                 // Version 3
 		event4, event5, event6, // Version 4, 5 and 6
 	}
-	for i, event := range events {
-		if err := mocks.CompareEvents(event, expectedEvents[i]); err != nil {
-			t.Error("the event was incorrect:", err)
-		}
-		if event.Version() != i+1 {
-			t.Error("the event version should be correct:", event, event.Version())
-		}
+	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// Load events for another aggregate.
@@ -143,13 +140,9 @@ func AcceptanceTest(t *testing.T, ctx context.Context, store eh.EventStore) []eh
 		t.Error("there should be no error:", err)
 	}
 	expectedEvents = []eh.Event{event7}
-	for i, event := range events {
-		if err := mocks.CompareEvents(event, expectedEvents[i]); err != nil {
-			t.Error("the event was incorrect:", err)
-		}
-		if event.Version() != i+1 {
-			t.Error("the event version should be correct:", event, event.Version())
-		}
+	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	return savedEvents
@@ -210,13 +203,9 @@ func MaintainerAcceptanceTest(t *testing.T, ctx context.Context, store eh.EventS
 		event2Mod, // Version 2, modified
 		event3,    // Version 3
 	}
-	for i, event := range events {
-		if err := mocks.CompareEvents(event, expectedEvents[i]); err != nil {
-			t.Error("the event was incorrect:", err)
-		}
-		if event.Version() != i+1 {
-			t.Error("the event version should be correct:", event, event.Version())
-		}
+	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// Save events of the old type.
@@ -248,8 +237,10 @@ func MaintainerAcceptanceTest(t *testing.T, ctx context.Context, store eh.EventS
 	if len(events) != 1 {
 		t.Fatal("there should be one event")
 	}
-	if err := mocks.CompareEvents(events[0], newEvent1); err != nil {
-		t.Error("the event was incorrect:", err)
+	expected := newEvent1
+	if !cmp.Equal(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	events, err = store.Load(ctx, id2)
 	if err != nil {
@@ -260,8 +251,10 @@ func MaintainerAcceptanceTest(t *testing.T, ctx context.Context, store eh.EventS
 	if len(events) != 1 {
 		t.Fatal("there should be one event")
 	}
-	if err := mocks.CompareEvents(events[0], newEvent2); err != nil {
-		t.Error("the event was incorrect:", err)
+	expected = newEvent2
+	if !cmp.Equal(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 }
 

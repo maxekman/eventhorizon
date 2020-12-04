@@ -16,11 +16,12 @@ package version
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 	"github.com/looplab/eventhorizon/repo"
@@ -106,8 +107,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, m1) {
-		t.Error("the item should be correct:", model)
+	expected := m1
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// Find with min version, higher.
@@ -120,8 +123,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, m1) {
-		t.Error("the item should be correct:", model)
+	expected = m1
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// Find with min version, with timeout, data available immediately.
@@ -137,8 +142,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, m1) {
-		t.Error("the item should be correct:", model)
+	expected = m1
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// Find with min version, with timeout, data available on retry.
@@ -156,8 +163,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, m1) {
-		t.Error("the item should be correct:", model)
+	expected = m1
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// Find with min version, with timeout, data available immediately.
@@ -183,8 +192,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if dt > 10*time.Millisecond {
 		t.Error("the result should be available without delay")
 	}
-	if !reflect.DeepEqual(model, m2) {
-		t.Error("the item should be correct:", model)
+	expected = m2
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// Find with min version, with timeout, created data available on retry.
@@ -207,8 +218,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, m3) {
-		t.Error("the item should be correct:", model)
+	expected = m3
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// Find with min version, with timeout exceeded.
@@ -247,8 +260,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo, baseRepo *memory
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, m4) {
-		t.Error("the item should be correct:", model)
+	expected = m4
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 }
 

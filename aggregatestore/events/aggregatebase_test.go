@@ -16,11 +16,12 @@ package events
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 )
 
@@ -61,8 +62,10 @@ func TestAggregateEvents(t *testing.T) {
 	if event1.EventType() != TestAggregateEventType {
 		t.Error("the event type should be correct:", event1.EventType())
 	}
-	if !reflect.DeepEqual(event1.Data(), &TestEventData{"event1"}) {
-		t.Error("the data should be correct:", event1.Data())
+	expected := &TestEventData{"event1"}
+	if !cmp.Equal(expected, event1.Data()) {
+		t.Error("the data should be correct:")
+		t.Log(cmp.Diff(expected, event1.Data()))
 	}
 	if !event1.Timestamp().Equal(timestamp) {
 		t.Error("the timestamp should not be zero:", event1.Timestamp())

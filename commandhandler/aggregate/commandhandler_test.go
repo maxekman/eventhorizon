@@ -17,10 +17,11 @@ package aggregate
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -59,8 +60,10 @@ func TestCommandHandler(t *testing.T) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(a.Commands, []eh.Command{cmd}) {
-		t.Error("the handeled command should be correct:", a.Commands)
+	expected := []eh.Command{cmd}
+	if !cmp.Equal(expected, a.Commands) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, a.Commands))
 	}
 	if val, ok := a.Context.Value("testkey").(string); !ok || val != "testval" {
 		t.Error("the context should be correct:", a.Context)
@@ -101,8 +104,10 @@ func TestCommandHandler_ErrorInHandler(t *testing.T) {
 	if err == nil || err.Error() != "command error" {
 		t.Error("there should be a command error:", err)
 	}
-	if !reflect.DeepEqual(a.Commands, []eh.Command{}) {
-		t.Error("the handeled command should be correct:", a.Commands)
+	expected := []eh.Command{}
+	if !cmp.Equal(expected, a.Commands) {
+		t.Error("the handeled command should be correct:")
+		t.Log(cmp.Diff(expected, a.Commands))
 	}
 }
 

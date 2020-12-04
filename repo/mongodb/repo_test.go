@@ -17,10 +17,10 @@ package mongodb
 import (
 	"context"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -92,8 +92,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 	if len(result) != 1 {
 		t.Error("there should be one item:", len(result))
 	}
-	if !reflect.DeepEqual(result[0], modelCustom) {
-		t.Error("the item should be correct:", modelCustom)
+	expected := modelCustom
+	if !cmp.Equal(expected, result[0]) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, result[0]))
 	}
 
 	// FindCustom with no query.
@@ -135,8 +137,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(model, modelCustom2) {
-		t.Error("the item should be correct:", model)
+	expected = modelCustom2
+	if !cmp.Equal(expected, model) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, model))
 	}
 
 	// FindCustomIter by content.
@@ -150,8 +154,10 @@ func extraRepoTests(t *testing.T, ctx context.Context, r *Repo) {
 	if iter.Next(ctx) != true {
 		t.Error("the iterator should have results")
 	}
-	if !reflect.DeepEqual(iter.Value(), modelCustom) {
-		t.Error("the item should be correct:", modelCustom)
+	expected = modelCustom
+	if !cmp.Equal(expected, iter.Value()) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, iter.Value()))
 	}
 	if iter.Next(ctx) == true {
 		t.Error("the iterator should have no results")

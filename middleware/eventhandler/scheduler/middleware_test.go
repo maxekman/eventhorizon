@@ -16,11 +16,12 @@ package scheduler
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -44,8 +45,10 @@ func TestCommandHandler(t *testing.T) {
 	if err := h.HandleEvent(context.Background(), expectedEvent); err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(inner.Events, []eh.Event{expectedEvent}) {
-		t.Error("the events should be correct:", inner.Events)
+	expected := []eh.Event{expectedEvent}
+	if !cmp.Equal(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	inner.Events = nil
 
@@ -60,16 +63,20 @@ func TestCommandHandler(t *testing.T) {
 	// First.
 	<-time.After(time.Second)
 	inner.RLock()
-	if !reflect.DeepEqual(inner.Events, []eh.Event{expectedEvent}) {
-		t.Error("the events should be correct:", inner.Events)
+	expected = []eh.Event{expectedEvent}
+	if !cmp.Equal(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	inner.RUnlock()
 
 	// Second.
 	<-time.After(time.Second)
 	inner.RLock()
-	if !reflect.DeepEqual(inner.Events, []eh.Event{expectedEvent, expectedEvent}) {
-		t.Error("the events should be correct:", inner.Events)
+	expected = []eh.Event{expectedEvent, expectedEvent}
+	if !cmp.Equal(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	inner.RUnlock()
 
@@ -77,14 +84,18 @@ func TestCommandHandler(t *testing.T) {
 	cancelScheduleEvent()
 	<-time.After(time.Second)
 	inner.RLock()
-	if !reflect.DeepEqual(inner.Events, []eh.Event{expectedEvent, expectedEvent}) {
-		t.Error("the events should be correct:", inner.Events)
+	expected = []eh.Event{expectedEvent, expectedEvent}
+	if !cmp.Equal(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	inner.RUnlock()
 
 	inner2.RLock()
-	if !reflect.DeepEqual(inner2.Events, []eh.Event{expectedEvent, expectedEvent}) {
-		t.Error("the other handlers events should be correct:", inner2.Events)
+	expected = []eh.Event{expectedEvent, expectedEvent}
+	if !cmp.Equal(expected, inner2.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, inner2.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	inner2.RUnlock()
 

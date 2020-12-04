@@ -16,14 +16,15 @@ package todo
 
 import (
 	"context"
-	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
-	"github.com/kr/pretty"
+
 	eh "github.com/looplab/eventhorizon"
+	"github.com/looplab/eventhorizon/mocks"
 )
 
 func TestProjector(t *testing.T) {
@@ -43,7 +44,7 @@ func TestProjector(t *testing.T) {
 			eh.NewEventForAggregate(eh.EventType("unknown"), nil,
 				TimeNow(), AggregateType, id, 1),
 			&TodoList{},
-			errors.New("could not project event: unknown"),
+			mocks.ExpectedError("could not project event: unknown"),
 		},
 		"created": {
 			&TodoList{},
@@ -243,17 +244,13 @@ func TestProjector(t *testing.T) {
 			t.Parallel()
 			projector := &Projector{}
 			model, err := projector.Project(context.Background(), tc.event, tc.model)
-			if (err != nil && tc.expectedErr == nil) ||
-				(err == nil && tc.expectedErr != nil) ||
-				(err != nil && tc.expectedErr != nil && err.Error() != tc.expectedErr.Error()) {
+			if !cmp.Equal(tc.expectedErr, err, cmpopts.EquateErrors()) {
 				t.Errorf("test case '%s': incorrect error", name)
-				t.Log("exp:", tc.expectedErr)
-				t.Log("got:", err)
+				t.Log(cmp.Diff(tc.expectedErr, err, cmpopts.EquateErrors()))
 			}
-			if !reflect.DeepEqual(model, tc.expectedModel) {
+			if !cmp.Equal(tc.expectedModel, model) {
 				t.Errorf("test case '%s': incorrect aggregate", name)
-				t.Log("exp:\n", pretty.Sprint(tc.expectedModel))
-				t.Log("got:\n", pretty.Sprint(model))
+				t.Log(cmp.Diff(tc.expectedModel, model))
 			}
 		})
 	}

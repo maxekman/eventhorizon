@@ -17,11 +17,12 @@ package async
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -45,8 +46,10 @@ func TestEventHandler(t *testing.T) {
 	case <-time.After(time.Millisecond):
 	}
 	inner.RLock()
-	if !reflect.DeepEqual(inner.Events, []eh.Event{event}) {
-		t.Error("the event should have been handeled:", inner.Events)
+	expected := []eh.Event{event}
+	if !cmp.Equal(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the should should have been handeled:")
+		t.Log(cmp.Diff(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	inner.RUnlock()
 
@@ -74,7 +77,9 @@ func TestEventHandler(t *testing.T) {
 	case <-time.After(time.Millisecond):
 		t.Error("there should be an error")
 	}
-	if !reflect.DeepEqual(inner.Events, []eh.Event{}) {
-		t.Error("the event shoud not have been handeled:", inner.Events)
+	expected = []eh.Event{}
+	if !cmp.Equal(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the should should have been handeled:")
+		t.Log(cmp.Diff(expected, inner.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 }

@@ -16,9 +16,10 @@ package eventhorizon
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestEventHandlerFunc(t *testing.T) {
@@ -33,8 +34,9 @@ func TestEventHandlerFunc(t *testing.T) {
 
 	e := NewEvent("test", nil, time.Now())
 	h.HandleEvent(context.Background(), e)
-	if !reflect.DeepEqual(events, []Event{e}) {
-		t.Error("the events should be correct")
-		t.Log(events)
+	expected := []Event{e}
+	if !cmp.Equal(expected, events, cmp.AllowUnexported(EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expected, events, cmp.AllowUnexported(EmptyEvent)))
 	}
 }

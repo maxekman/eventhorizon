@@ -17,11 +17,13 @@ package projector
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 	"github.com/looplab/eventhorizon/repo/version"
@@ -56,8 +58,10 @@ func TestEventHandler_CreateModel(t *testing.T) {
 	if projector.event != event {
 		t.Error("the handled event should be correct:", projector.event)
 	}
-	if !reflect.DeepEqual(projector.entity, &mocks.SimpleModel{}) {
-		t.Error("the entity should be correct:", projector.entity)
+	expected := &mocks.SimpleModel{}
+	if !cmp.Equal(expected, projector.entity) {
+		t.Error("the entity should be correct:")
+		t.Log(cmp.Diff(expected, projector.entity))
 	}
 	if repo.Entity != projector.newEntity {
 		t.Error("the new entity should be correct:", repo.Entity)
@@ -93,8 +97,10 @@ func TestEventHandler_UpdateModel(t *testing.T) {
 	if projector.event != event {
 		t.Error("the handled event should be correct:", projector.event)
 	}
-	if projector.entity != entity {
-		t.Error("the entity should be correct:", projector.entity)
+	expected := entity
+	if !cmp.Equal(expected, projector.entity) {
+		t.Error("the entity should be correct:")
+		t.Log(cmp.Diff(expected, projector.entity))
 	}
 	if repo.Entity != projector.newEntity {
 		t.Error("the new entity should be correct:", repo.Entity)
@@ -131,8 +137,10 @@ func TestEventHandler_UpdateModelWithVersion(t *testing.T) {
 	if projector.event != event {
 		t.Error("the handled event should be correct:", projector.event)
 	}
-	if projector.entity != entity {
-		t.Error("the entity should be correct:", projector.entity)
+	expected := entity
+	if !cmp.Equal(expected, projector.entity) {
+		t.Error("the entity should be correct:")
+		t.Log(cmp.Diff(expected, projector.entity))
 	}
 	if repo.Entity != projector.newEntity {
 		t.Error("the new entity should be correct:", repo.Entity)
@@ -184,8 +192,10 @@ func TestEventHandler_UpdateModelWithEventsOutOfOrder(t *testing.T) {
 	if projector.event != event {
 		t.Error("the handled event should be correct:", projector.event)
 	}
-	if projector.entity != newEntity {
-		t.Error("the entity should be correct:", projector.entity)
+	expected := newEntity
+	if !cmp.Equal(expected, projector.entity) {
+		t.Error("the entity should be correct:")
+		t.Log(cmp.Diff(expected, projector.entity))
 	}
 	if repo.Entity != projector.newEntity {
 		t.Error("the new entity should be correct:", repo.Entity)
@@ -218,8 +228,10 @@ func TestEventHandler_DeleteModel(t *testing.T) {
 	if projector.event != event {
 		t.Error("the handled event should be correct:", projector.event)
 	}
-	if projector.entity != entity {
-		t.Error("the entity should be correct:", projector.entity)
+	expected := entity
+	if !cmp.Equal(expected, projector.entity) {
+		t.Error("the entity should be correct:")
+		t.Log(cmp.Diff(expected, projector.entity))
 	}
 	if repo.Entity != projector.newEntity {
 		t.Error("the new entity should be correct:", repo.Entity)
@@ -248,7 +260,8 @@ func TestEventHandler_LoadError(t *testing.T) {
 		Err:       loadErr,
 		Namespace: eh.NamespaceFromContext(ctx),
 	}
-	if err := handler.HandleEvent(ctx, event); !reflect.DeepEqual(err, expectedErr) {
+	err := handler.HandleEvent(ctx, event)
+	if !cmp.Equal(err, expectedErr, cmpopts.EquateErrors()) {
 		t.Error("there shoud be an error:", err)
 	}
 }
@@ -275,7 +288,8 @@ func TestEventHandler_SaveError(t *testing.T) {
 		Err:       saveErr,
 		Namespace: eh.NamespaceFromContext(ctx),
 	}
-	if err := handler.HandleEvent(ctx, event); !reflect.DeepEqual(err, expectedErr) {
+	err := handler.HandleEvent(ctx, event)
+	if !cmp.Equal(err, expectedErr, cmpopts.EquateErrors()) {
 		t.Error("there shoud be an error:", err)
 	}
 }
@@ -302,7 +316,8 @@ func TestEventHandler_ProjectError(t *testing.T) {
 		Err:       projectErr,
 		Namespace: eh.NamespaceFromContext(ctx),
 	}
-	if err := handler.HandleEvent(ctx, event); !reflect.DeepEqual(err, expectedErr) {
+	err := handler.HandleEvent(ctx, event)
+	if !cmp.Equal(err, expectedErr, cmpopts.EquateErrors()) {
 		t.Error("there shoud be an error:", err)
 	}
 }

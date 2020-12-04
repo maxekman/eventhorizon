@@ -17,11 +17,12 @@ package model
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -77,8 +78,10 @@ func TestAggregateStore_Load(t *testing.T) {
 	if err != nil {
 		t.Fatal("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(loadedAgg, agg) {
-		t.Error("the aggregate should be correct:", loadedAgg)
+	expected := agg
+	if !cmp.Equal(expected, loadedAgg) {
+		t.Error("the aggregate should be correct:")
+		t.Log(cmp.Diff(expected, loadedAgg))
 	}
 
 	// Store error.
@@ -156,8 +159,10 @@ func TestAggregateStore_SaveWithPublish(t *testing.T) {
 	if repo.Entity != agg {
 		t.Error("the aggregate should be saved")
 	}
-	if !reflect.DeepEqual(bus.Events, []eh.Event{event}) {
-		t.Error("there should be an event on the bus:", bus.Events)
+	expected := []eh.Event{event}
+	if !cmp.Equal(expected, bus.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("there should be an event on the bus:")
+		t.Log(cmp.Diff(expected, bus.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	if len(agg.SliceEventSource) != 0 {
 		t.Error("there should be no events to publish")

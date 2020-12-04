@@ -16,13 +16,13 @@ package todo
 
 import (
 	"context"
-	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
-	"github.com/kr/pretty"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/aggregatestore/events"
 	"github.com/looplab/eventhorizon/mocks"
@@ -50,7 +50,7 @@ func TestAggregateHandleCommand(t *testing.T) {
 				Content: "testcontent",
 			},
 			nil,
-			errors.New("could not handle command: Command"),
+			mocks.ExpectedError("could not handle command: Command"),
 		},
 		"create": {
 			&Aggregate{
@@ -72,7 +72,7 @@ func TestAggregateHandleCommand(t *testing.T) {
 			},
 			&Create{},
 			nil,
-			errors.New("already created"),
+			mocks.ExpectedError("already created"),
 		},
 		"delete": {
 			&Aggregate{
@@ -92,7 +92,7 @@ func TestAggregateHandleCommand(t *testing.T) {
 			},
 			&Delete{},
 			nil,
-			errors.New("not created"),
+			mocks.ExpectedError("not created"),
 		},
 		"add item": {
 			&Aggregate{
@@ -149,7 +149,7 @@ func TestAggregateHandleCommand(t *testing.T) {
 				ItemID: 2,
 			},
 			nil,
-			errors.New("item does not exist: 2"),
+			mocks.ExpectedError("item does not exist: 2"),
 		},
 		"remove completed items": {
 			&Aggregate{
@@ -225,7 +225,7 @@ func TestAggregateHandleCommand(t *testing.T) {
 				Description: "new desc",
 			},
 			nil,
-			errors.New("item does not exist: 2"),
+			mocks.ExpectedError("item does not exist: 2"),
 		},
 		"set item description (no change)": {
 			&Aggregate{
@@ -311,7 +311,7 @@ func TestAggregateHandleCommand(t *testing.T) {
 				Checked: true,
 			},
 			nil,
-			errors.New("item does not exist: 2"),
+			mocks.ExpectedError("item does not exist: 2"),
 		},
 		"check item (no change)": {
 			&Aggregate{
@@ -409,18 +409,14 @@ func TestAggregateHandleCommand(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			err := tc.agg.HandleCommand(context.Background(), tc.cmd)
-			if (err != nil && tc.expectedErr == nil) ||
-				(err == nil && tc.expectedErr != nil) ||
-				(err != nil && tc.expectedErr != nil && err.Error() != tc.expectedErr.Error()) {
+			if !cmp.Equal(tc.expectedErr, err, cmpopts.EquateErrors()) {
 				t.Errorf("test case '%s': incorrect error", name)
-				t.Log("exp:", tc.expectedErr)
-				t.Log("got:", err)
+				t.Log(cmp.Diff(tc.expectedErr, err, cmpopts.EquateErrors()))
 			}
 			events := tc.agg.Events()
-			if !reflect.DeepEqual(events, tc.expectedEvents) {
+			if !cmp.Equal(tc.expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
 				t.Errorf("test case '%s': incorrect events", name)
-				t.Log("exp:\n", pretty.Sprint(tc.expectedEvents))
-				t.Log("got:\n", pretty.Sprint(events))
+				t.Log(cmp.Diff(tc.expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
 			}
 		})
 	}
@@ -447,7 +443,7 @@ func TestAggregateApplyEvent(t *testing.T) {
 			&Aggregate{
 				AggregateBase: events.NewAggregateBase(AggregateType, id),
 			},
-			errors.New("could not apply event: unknown"),
+			mocks.ExpectedError("could not apply event: unknown"),
 		},
 		"created": {
 			&Aggregate{
@@ -627,17 +623,13 @@ func TestAggregateApplyEvent(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			err := tc.agg.ApplyEvent(context.Background(), tc.event)
-			if (err != nil && tc.expectedErr == nil) ||
-				(err == nil && tc.expectedErr != nil) ||
-				(err != nil && tc.expectedErr != nil && err.Error() != tc.expectedErr.Error()) {
+			if !cmp.Equal(tc.expectedErr, err, cmpopts.EquateErrors()) {
 				t.Errorf("test case '%s': incorrect error", name)
-				t.Log("exp:", tc.expectedErr)
-				t.Log("got:", err)
+				t.Log(cmp.Diff(tc.expectedErr, err, cmpopts.EquateErrors()))
 			}
-			if !reflect.DeepEqual(tc.agg, tc.expectedAgg) {
+			if !cmp.Equal(tc.expectedAgg, tc.agg, cmp.AllowUnexported(events.AggregateBase{}, Aggregate{})) {
 				t.Errorf("test case '%s': incorrect aggregate", name)
-				t.Log("exp:\n", pretty.Sprint(tc.expectedAgg))
-				t.Log("got:\n", pretty.Sprint(tc.agg))
+				t.Log(cmp.Diff(tc.expectedAgg, tc.agg, cmp.AllowUnexported(events.AggregateBase{}, Aggregate{})))
 			}
 		})
 	}

@@ -17,11 +17,12 @@ package events
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -93,7 +94,6 @@ func TestAggregateStore_LoadEvents(t *testing.T) {
 	if err := eventStore.Save(ctx, []eh.Event{event1}, 0); err != nil {
 		t.Fatal("there should be no error:", err)
 	}
-	t.Log(eventStore.Events)
 
 	loaded, err := store.Load(ctx, TestAggregateType, id)
 	if err != nil {
@@ -109,8 +109,10 @@ func TestAggregateStore_LoadEvents(t *testing.T) {
 	if a.Version() != 1 {
 		t.Error("the version should be 1:", a.Version())
 	}
-	if !reflect.DeepEqual(a.(*TestAggregate).event, event1) {
-		t.Error("the event should be correct:", a.(*TestAggregate).event)
+	expected := event1
+	if !cmp.Equal(expected, a.(*TestAggregate).event, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the event should be correct:")
+		t.Log(cmp.Diff(expected, a.(*TestAggregate).event, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// Store error.
@@ -187,8 +189,10 @@ func TestAggregateStore_SaveEvents(t *testing.T) {
 		t.Error("the version should be 1:", agg.Version())
 	}
 
-	if !reflect.DeepEqual(bus.Events, []eh.Event{event1}) {
-		t.Error("there should be an event on the bus:", bus.Events)
+	expected := []eh.Event{event1}
+	if !cmp.Equal(expected, bus.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("there should be an event on the bus:")
+		t.Log(cmp.Diff(expected, bus.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// Store error.

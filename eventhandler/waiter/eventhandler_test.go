@@ -16,12 +16,13 @@ package waiter
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -53,8 +54,9 @@ func TestEventHandler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !reflect.DeepEqual(event, expectedEvent) {
-		t.Error("the event should be correct:", event)
+	if !cmp.Equal(expectedEvent, event, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the event should be correct:")
+		t.Log(cmp.Diff(expectedEvent, event, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// Other events should not match.

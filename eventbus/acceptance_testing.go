@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"github.com/kr/pretty"
 
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/middleware/eventhandler/observer"
@@ -89,12 +89,9 @@ func AcceptanceTest(t *testing.T, bus1, bus2 eh.EventBus, timeout time.Duration)
 	if !otherHandler.Wait(timeout) {
 		t.Error("did not receive event in time")
 	}
-	if !mocks.EqualEvents(otherHandler.Events, expectedEvents) {
-		t.Error("the events were incorrect:")
-		t.Log(otherHandler.Events)
-		if len(otherHandler.Events) == 1 {
-			t.Log(pretty.Sprint(otherHandler.Events[0]))
-		}
+	if !cmp.Equal(expectedEvents, otherHandler.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, otherHandler.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 
 	// Add handlers and observers.
@@ -120,20 +117,15 @@ func AcceptanceTest(t *testing.T, bus1, bus2 eh.EventBus, timeout time.Duration)
 	if !(handlerBus1.Wait(timeout) || handlerBus2.Wait(timeout)) {
 		t.Error("did not receive event in time")
 	}
-	if !(mocks.EqualEvents(handlerBus1.Events, expectedEvents) ||
-		mocks.EqualEvents(handlerBus2.Events, expectedEvents)) {
-		t.Error("the events were incorrect:")
-		t.Log(handlerBus1.Events)
-		t.Log(handlerBus2.Events)
-		if len(handlerBus1.Events) == 1 {
-			t.Log(pretty.Sprint(handlerBus1.Events[0]))
-		}
-		if len(handlerBus2.Events) == 1 {
-			t.Log(pretty.Sprint(handlerBus2.Events[0]))
-		}
+	if !(cmp.Equal(expectedEvents, handlerBus1.Events, cmp.AllowUnexported(eh.EmptyEvent)) ||
+		cmp.Equal(expectedEvents, handlerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent))) {
+		t.Error("the events should be correct correct in ONE of the handlers on the same bus:")
+		t.Log(cmp.Diff(expectedEvents, handlerBus1.Events, cmp.AllowUnexported(eh.EmptyEvent)))
+		t.Log(cmp.Diff(expectedEvents, handlerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
-	if mocks.EqualEvents(handlerBus1.Events, handlerBus2.Events) {
-		t.Error("only one handler should receive the events")
+	if cmp.Equal(handlerBus1.Events, handlerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("only one handler should receive the events:")
+		t.Log(cmp.Diff(handlerBus1.Events, handlerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	correctCtx1 := false
 	if val, ok := mocks.ContextOne(handlerBus1.Context); ok && val == "testval" {
@@ -151,9 +143,9 @@ func AcceptanceTest(t *testing.T, bus1, bus2 eh.EventBus, timeout time.Duration)
 	if !anotherHandlerBus2.Wait(timeout) {
 		t.Error("did not receive event in time")
 	}
-	if !mocks.EqualEvents(anotherHandlerBus2.Events, expectedEvents) {
-		t.Error("the events were incorrect:")
-		t.Log(anotherHandlerBus2.Events)
+	if !cmp.Equal(expectedEvents, anotherHandlerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, anotherHandlerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	if val, ok := mocks.ContextOne(anotherHandlerBus2.Context); !ok || val != "testval" {
 		t.Error("the context should be correct:", anotherHandlerBus2.Context)
@@ -163,10 +155,9 @@ func AcceptanceTest(t *testing.T, bus1, bus2 eh.EventBus, timeout time.Duration)
 	if !observerBus1.Wait(timeout) {
 		t.Error("did not receive event in time")
 	}
-	for i, event := range observerBus1.Events {
-		if err := mocks.CompareEvents(event, expectedEvents[i]); err != nil {
-			t.Error("the event was incorrect:", err)
-		}
+	if !cmp.Equal(expectedEvents, observerBus1.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, observerBus1.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	if val, ok := mocks.ContextOne(observerBus1.Context); !ok || val != "testval" {
 		t.Error("the context should be correct:", observerBus1.Context)
@@ -176,10 +167,9 @@ func AcceptanceTest(t *testing.T, bus1, bus2 eh.EventBus, timeout time.Duration)
 	if !observerBus2.Wait(timeout) {
 		t.Error("did not receive event in time")
 	}
-	for i, event := range observerBus2.Events {
-		if err := mocks.CompareEvents(event, expectedEvents[i]); err != nil {
-			t.Error("the event was incorrect:", err)
-		}
+	if !cmp.Equal(expectedEvents, observerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)) {
+		t.Error("the events should be correct:")
+		t.Log(cmp.Diff(expectedEvents, observerBus2.Events, cmp.AllowUnexported(eh.EmptyEvent)))
 	}
 	if val, ok := mocks.ContextOne(observerBus2.Context); !ok || val != "testval" {
 		t.Error("the context should be correct:", observerBus2.Context)

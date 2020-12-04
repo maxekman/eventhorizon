@@ -16,11 +16,12 @@ package repo
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+
 	eh "github.com/looplab/eventhorizon"
 	"github.com/looplab/eventhorizon/mocks"
 )
@@ -77,8 +78,10 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(entity, entity1) {
-		t.Error("the item should be correct:", entity)
+	expected := entity1
+	if !cmp.Equal(expected, entity) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, entity))
 	}
 
 	// FindAll with one item.
@@ -89,8 +92,10 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 	if len(result) != 1 {
 		t.Error("there should be one item:", len(result))
 	}
-	if !reflect.DeepEqual(result, []eh.Entity{entity1}) {
-		t.Error("the item should be correct:", entity1)
+	expectedItems := []eh.Entity{entity1}
+	if !cmp.Equal(expectedItems, result) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expectedItems, result))
 	}
 
 	// Save and overwrite with same ID.
@@ -106,8 +111,10 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(entity, entity1Alt) {
-		t.Error("the item should be correct:", entity)
+	expected = entity1Alt
+	if !cmp.Equal(expected, entity) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, entity))
 	}
 
 	// Save with another ID.
@@ -123,8 +130,10 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 	if err != nil {
 		t.Error("there should be no error:", err)
 	}
-	if !reflect.DeepEqual(entity, entity2) {
-		t.Error("the item should be correct:", entity)
+	expected = entity2
+	if !cmp.Equal(expected, entity) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected, entity))
 	}
 
 	// FindAll with two items, order should be preserved from insert.
@@ -136,9 +145,12 @@ func AcceptanceTest(t *testing.T, ctx context.Context, repo eh.ReadWriteRepo) {
 		t.Error("there should be two items:", len(result))
 	}
 	// Retrieval in any order is accepted.
-	if !reflect.DeepEqual(result, []eh.Entity{entity1Alt, entity2}) &&
-		!reflect.DeepEqual(result, []eh.Entity{entity2, entity1Alt}) {
-		t.Error("the items should be correct:", result)
+	expected1 := []eh.Entity{entity1Alt, entity2}
+	expected2 := []eh.Entity{entity2, entity1Alt}
+	if !cmp.Equal(expected1, result) && !cmp.Equal(expected2, result) {
+		t.Error("the item should be correct:")
+		t.Log(cmp.Diff(expected1, result))
+		t.Log(cmp.Diff(expected2, result))
 	}
 
 	// Remove item.

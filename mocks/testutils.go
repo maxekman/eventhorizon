@@ -14,57 +14,11 @@
 
 package mocks
 
-import (
-	"fmt"
-	"reflect"
+// ExpectedError is an error that is equal to any error with the same string repr.
+type ExpectedError string
 
-	eh "github.com/looplab/eventhorizon"
-)
+// Error implements the error.Error method.
+func (e ExpectedError) Error() string { return string(e) }
 
-// CompareEvents compares two events, ignoring their version and timestamp.
-func CompareEvents(e1, e2 eh.Event) error {
-	if e1.AggregateID() != e2.AggregateID() {
-		return fmt.Errorf("incorrect aggregate ID: %s (should be %s)", e1.AggregateID(), e2.AggregateID())
-	}
-	if e1.AggregateType() != e2.AggregateType() {
-		return fmt.Errorf("incorrect aggregate type: %s (should be %s)", e1.AggregateType(), e2.AggregateType())
-	}
-	if e1.EventType() != e2.EventType() {
-		return fmt.Errorf("incorrect event type: %s (should be %s)", e1.EventType(), e2.EventType())
-	}
-	if !reflect.DeepEqual(e1.Data(), e2.Data()) {
-		return fmt.Errorf("incorrect event data: %s (should be %s)", e1.Data(), e2.Data())
-	}
-	return nil
-}
-
-// EqualEvents compares two slices of events.
-func EqualEvents(evts1, evts2 []eh.Event) bool {
-	if len(evts1) != len(evts2) {
-		return false
-	}
-	for i, e1 := range evts1 {
-		e2 := evts2[i]
-
-		if e1.EventType() != e2.EventType() {
-			return false
-		}
-		if !reflect.DeepEqual(e1.Data(), e2.Data()) {
-			return false
-		}
-		if e1.Timestamp() != e2.Timestamp() {
-			return false
-		}
-		if e1.AggregateID() != e2.AggregateID() {
-			return false
-		}
-		if e1.AggregateType() != e2.AggregateType() {
-			return false
-		}
-		if e1.Version() != e2.Version() {
-			return false
-		}
-	}
-
-	return true
-}
+// Is implements the Is method of the errors packege.
+func (e ExpectedError) Is(err error) bool { return err != nil && e.Error() == err.Error() }
