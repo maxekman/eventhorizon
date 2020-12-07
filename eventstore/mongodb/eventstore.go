@@ -426,3 +426,8 @@ func (e event) Timestamp() time.Time {
 func (e event) String() string {
 	return fmt.Sprintf("%s@%d", e.dbEvent.EventType, e.dbEvent.Version)
 }
+
+// Equal compares events for equality. Useful when using cmp.Equal().
+func (e event) Equal(other eh.Event) bool {
+	return eh.CompareEvent(e, other)
+}

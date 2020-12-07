@@ -14,6 +14,16 @@
 
 package mocks
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
+
+	eh "github.com/looplab/eventhorizon"
+)
+
 // ExpectedError is an error that is equal to any error with the same string repr.
 type ExpectedError string
 
@@ -22,3 +32,47 @@ func (e ExpectedError) Error() string { return string(e) }
 
 // Is implements the Is method of the errors packege.
 func (e ExpectedError) Is(err error) bool { return err != nil && e.Error() == err.Error() }
+
+// CompareEvent compares two events.
+func CompareEvent(x, y eh.Event) bool {
+	if x.EventType() != y.EventType() {
+		return false
+	}
+	if x.Timestamp() != y.Timestamp() {
+		return false
+	}
+	if x.AggregateType() != y.AggregateType() {
+		return false
+	}
+	if x.AggregateID() != y.AggregateID() {
+		return false
+	}
+	if x.Version() != y.Version() {
+		return false
+	}
+	if !cmp.Equal(x.Data(), y.Data()) {
+		return false
+	}
+	return true
+}
+
+type ComparableEvent struct {
+	EventType     eh.EventType
+	Data          eh.EventData
+	Timestamp     time.Time
+	AggregateType eh.AggregateType
+	AggregateID   uuid.UUID
+	Version       int
+}
+
+func EventTransformer(e eh.Event) *ComparableEvent {
+	fmt.Printf("TRANSFORMING %T\n", e)
+	return &ComparableEvent{
+		EventType:     e.EventType(),
+		Data:          e.Data(),
+		Timestamp:     e.Timestamp(),
+		AggregateType: e.AggregateType(),
+		AggregateID:   e.AggregateID(),
+		Version:       e.Version(),
+	}
+}

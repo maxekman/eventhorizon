@@ -129,9 +129,9 @@ func AcceptanceTest(t *testing.T, ctx context.Context, store eh.EventStore) []eh
 		event3,                 // Version 3
 		event4, event5, event6, // Version 4, 5 and 6
 	}
-	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+	if !cmp.Equal(expectedEvents, events, cmp.Transformer("event", mocks.EventTransformer)) {
 		t.Error("the events should be correct:")
-		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
+		t.Log(cmp.Diff(expectedEvents, events, cmp.Transformer("event", mocks.EventTransformer)))
 	}
 
 	// Load events for another aggregate.
@@ -140,9 +140,9 @@ func AcceptanceTest(t *testing.T, ctx context.Context, store eh.EventStore) []eh
 		t.Error("there should be no error:", err)
 	}
 	expectedEvents = []eh.Event{event7}
-	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+	if !cmp.Equal(expectedEvents, events, cmp.Transformer("event", mocks.EventTransformer)) {
 		t.Error("the events should be correct:")
-		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
+		t.Log(cmp.Diff(expectedEvents, events, cmp.Transformer("event", mocks.EventTransformer)))
 	}
 
 	return savedEvents
@@ -203,9 +203,9 @@ func MaintainerAcceptanceTest(t *testing.T, ctx context.Context, store eh.EventS
 		event2Mod, // Version 2, modified
 		event3,    // Version 3
 	}
-	if !cmp.Equal(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)) {
+	if !cmp.Equal(expectedEvents, events, cmp.Transformer("event", mocks.EventTransformer)) {
 		t.Error("the events should be correct:")
-		t.Log(cmp.Diff(expectedEvents, events, cmp.AllowUnexported(eh.EmptyEvent)))
+		t.Log(cmp.Diff(expectedEvents, events, cmp.Transformer("event", mocks.EventTransformer)))
 	}
 
 	// Save events of the old type.
@@ -238,9 +238,12 @@ func MaintainerAcceptanceTest(t *testing.T, ctx context.Context, store eh.EventS
 		t.Fatal("there should be one event")
 	}
 	expected := newEvent1
-	if !cmp.Equal(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)) {
+	otherEvent := eh.NewEventForAggregate(newEventType, nil, timestamp,
+		mocks.AggregateType, id1, 3)
+	t.Log(cmp.Diff(expected, otherEvent))
+	if !cmp.Equal(expected, events[0], cmp.Transformer("event", mocks.EventTransformer)) {
 		t.Error("the events should be correct:")
-		t.Log(cmp.Diff(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)))
+		t.Log(cmp.Diff(expected, events[0], cmp.Transformer("event", mocks.EventTransformer)))
 	}
 	events, err = store.Load(ctx, id2)
 	if err != nil {
@@ -252,9 +255,9 @@ func MaintainerAcceptanceTest(t *testing.T, ctx context.Context, store eh.EventS
 		t.Fatal("there should be one event")
 	}
 	expected = newEvent2
-	if !cmp.Equal(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)) {
+	if !cmp.Equal(expected, events[0], cmp.Transformer("event", mocks.EventTransformer)) {
 		t.Error("the events should be correct:")
-		t.Log(cmp.Diff(expected, events[0], cmp.AllowUnexported(eh.EmptyEvent)))
+		t.Log(cmp.Diff(expected, events[0], cmp.Transformer("event", mocks.EventTransformer)))
 	}
 }
 

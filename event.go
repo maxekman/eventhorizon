@@ -138,6 +138,11 @@ func (e event) String() string {
 	return fmt.Sprintf("%s@%d", e.eventType, e.version)
 }
 
+// Equal compares events for equality. Useful when using cmp.Equal().
+func (e event) Equal(other Event) bool {
+	return CompareEvent(e, other)
+}
+
 // ErrEventDataNotRegistered is when no event data factory was registered.
 var ErrEventDataNotRegistered = errors.New("event data not registered")
 
@@ -196,4 +201,27 @@ var eventDataFactoriesMu sync.RWMutex
 // internal representation of eh.Event.
 func AllowUnexportedEvent() cmp.Option {
 	return cmp.AllowUnexported(event{})
+}
+
+// CompareEvent compares two events.
+func CompareEvent(x, y Event) bool {
+	if x.EventType() != y.EventType() {
+		return false
+	}
+	if x.Timestamp() != y.Timestamp() {
+		return false
+	}
+	if x.AggregateType() != y.AggregateType() {
+		return false
+	}
+	if x.AggregateID() != y.AggregateID() {
+		return false
+	}
+	if x.Version() != y.Version() {
+		return false
+	}
+	if !cmp.Equal(x.Data(), y.Data()) {
+		return false
+	}
+	return true
 }
