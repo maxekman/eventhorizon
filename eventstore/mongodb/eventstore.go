@@ -51,14 +51,17 @@ var (
 	ErrCouldNotSaveAggregate = errors.New("could not save aggregate")
 	// ErrCouldNotHandleEvents is when the events could not be handeled after saving.
 	ErrCouldNotHandleEvents = errors.New("could not handle events")
+	// ErrCouldNotStartSession is when a DB session could not be started.
+	ErrCouldNotStartSession = errors.New("could not start session")
 )
 
 // EventStore implements an EventStore for MongoDB.
 type EventStore struct {
-	client       *mongo.Client
-	dbPrefix     string
-	dbName       func(ctx context.Context) string
-	eventHandler eh.EventHandler
+	client          *mongo.Client
+	dbPrefix        string
+	dbName          func(ctx context.Context) string
+	eventHandler    eh.EventHandler
+	useTransactions bool
 }
 
 // NewEventStore creates a new EventStore with a MongoDB URI: `mongodb://hostname`.
@@ -131,8 +134,19 @@ func WithEventHandler(h eh.EventHandler) Option {
 	}
 }
 
+// WithTransactions will run the save operation and optional event handler in
+// in a transaction. This means that the event handler must succeed for the save
+// to be successful.
+// Requires MongoDB to be configured as a replica set.
+func WithTransactions() Option {
+	return func(s *EventStore) error {
+		s.useTransactions = true
+		return nil
+	}
+}
+
 // Save implements the Save method of the eventhorizon.EventStore interface.
-func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersion int) error {
+func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersion int) (saveErr error) {
 	if len(events) == 0 {
 		return eh.EventStoreError{
 			Err:       eh.ErrNoEventsToAppend,
@@ -171,6 +185,50 @@ func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersio
 
 	c := s.client.Database(s.dbName(ctx)).Collection("events")
 
+	// Setup a transaction that will both save the event and run the optional
+	// event handler (which will most likely be used to publish events).
+	if s.useTransactions {
+		session, err := s.client.StartSession()
+		if err != nil {
+			return eh.EventStoreError{
+				Err:       ErrCouldNotStartSession,
+				BaseErr:   err,
+				Namespace: eh.NamespaceFromContext(ctx),
+			}
+		}
+
+		if err := session.StartTransaction(); err != nil {
+			return eh.EventStoreError{
+				Err:       ErrCouldNotStartSession,
+				BaseErr:   err,
+				Namespace: eh.NamespaceFromContext(ctx),
+			}
+		}
+		// Commit or abort the transaction depending on if there are any errors
+		// during storing the event or handling it.
+		defer func() {
+			if saveErr == nil {
+				if err := session.CommitTransaction(ctx); err != nil {
+					saveErr = eh.EventStoreError{
+						Err:       ErrCouldNotSaveAggregate,
+						BaseErr:   err,
+						Namespace: eh.NamespaceFromContext(ctx),
+					}
+				}
+			} else {
+				if err := session.AbortTransaction(ctx); err != nil {
+					saveErr = eh.EventStoreError{
+						Err:       ErrCouldNotSaveAggregate,
+						BaseErr:   err,
+						Namespace: eh.NamespaceFromContext(ctx),
+					}
+				}
+			}
+		}()
+		// The context needs to be a session context from now on.
+		ctx = mongo.NewSessionContext(ctx, session)
+	}
+
 	// Either insert a new aggregate or append to an existing.
 	if originalVersion == 0 {
 		aggregate := aggregateRecord{
@@ -180,11 +238,12 @@ func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersio
 		}
 
 		if _, err := c.InsertOne(ctx, aggregate); err != nil {
-			return eh.EventStoreError{
+			saveErr = eh.EventStoreError{
 				Err:       ErrCouldNotSaveAggregate,
 				BaseErr:   err,
 				Namespace: eh.NamespaceFromContext(ctx),
 			}
+			return
 		}
 	} else {
 		// Increment aggregate version on insert of new event record, and
@@ -200,17 +259,19 @@ func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersio
 				"$inc":  bson.M{"version": len(dbEvents)},
 			},
 		); err != nil {
-			return eh.EventStoreError{
+			saveErr = eh.EventStoreError{
 				Err:       ErrCouldNotSaveAggregate,
 				BaseErr:   err,
 				Namespace: eh.NamespaceFromContext(ctx),
 			}
+			return
 		} else if r.MatchedCount == 0 {
-			return eh.EventStoreError{
+			saveErr = eh.EventStoreError{
 				Err:       ErrCouldNotSaveAggregate,
 				BaseErr:   fmt.Errorf("invalid original version %d", originalVersion),
 				Namespace: eh.NamespaceFromContext(ctx),
 			}
+			return
 		}
 	}
 
@@ -218,11 +279,12 @@ func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersio
 	if s.eventHandler != nil {
 		for _, e := range events {
 			if err := s.eventHandler.HandleEvent(ctx, e); err != nil {
-				return eh.EventStoreError{
+				saveErr = eh.EventStoreError{
 					Err:       ErrCouldNotHandleEvents,
 					BaseErr:   err,
 					Namespace: eh.NamespaceFromContext(ctx),
 				}
+				return
 			}
 		}
 	}
